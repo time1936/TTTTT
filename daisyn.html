@@ -2,707 +2,1133 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Daisyn · 个人成长工作台</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;}
-  .fade-in{animation:fin .45s ease both}
-  @keyframes fin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .flower{position:fixed;top:-40px;font-size:26px;pointer-events:none;z-index:60;animation:drop 2.8s ease-in forwards}
-  @keyframes drop{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(105vh) rotate(320deg);opacity:.7}}
-  .pill{border-radius:9999px}
-  input[type=date]{color-scheme:light}
-  .tab-active{font-weight:600}
-  ::selection{background:#2A9D8F;color:#fff}
+  :root{
+    --pink:#FF6B9D; --teal:#4ECDC4; --yellow:#FFD93D; --green:#6BCB77; --purple:#A78BFA;
+    --ink:#2D3436; --paper:#FAFAFA;
+  }
+  html,body{height:100%;}
+  body{
+    font-family: system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#FAFAFA; color:#2D3436;
+    -webkit-font-smoothing:antialiased; overscroll-behavior-y:none;
+  }
+  .card{background:#fff;border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,0.06);}
+  .card-flat{background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+  .divider{height:1px;background:rgba(45,52,54,0.08);border:none;}
+  .tint-pink{background:rgba(255,107,157,0.15);}
+  .tint-teal{background:rgba(78,205,196,0.15);}
+  .tint-yellow{background:rgba(255,217,61,0.15);}
+  .tint-green{background:rgba(107,203,119,0.15);}
+  .tint-purple{background:rgba(167,139,250,0.15);}
+  .wl{ /* 裸双链渲染 */
+    color:#FF6B9D; font-weight:600; border-radius:8px; padding:1px 6px;
+    background:rgba(255,107,157,0.15); cursor:pointer;
+  }
+  .pager{display:flex;width:500%;transition:transform .38s cubic-bezier(.22,.8,.36,1);}
+  .page{width:20%;min-height:100vh;}
+  #pager-wrap{overflow:hidden;width:100%;}
+  .tab-on{background:rgba(255,107,157,0.15)!important;color:#FF6B9D!important;}
+  .btn-press:active{transform:scale(.94);transition:.08s;}
+  .check-pop{animation:pop .35s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes pop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+  @keyframes drop{
+    0%{transform:translateY(-80px) rotate(-8deg);opacity:0;}
+    15%{opacity:1;}
+    70%{transform:translateY(62vh) rotate(6deg);}
+    82%{transform:translateY(56vh) rotate(3deg);}
+    94%{transform:translateY(62vh) rotate(4deg);}
+    100%{transform:translateY(60vh) rotate(3deg);opacity:1;}
+  }
+  .drop-chip{position:fixed;top:0;z-index:90;animation:drop 1.5s cubic-bezier(.3,.7,.4,1) forwards;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .fadein{animation:fadein .3s ease;}
+  .claimed{filter:grayscale(1);opacity:.45;}
+  input,textarea,select{outline:none;}
+  .soft-scroll::-webkit-scrollbar{width:4px;height:4px;}
+  .soft-scroll::-webkit-scrollbar-thumb{background:rgba(45,52,54,.15);border-radius:4px;}
+  .modal-mask{background:rgba(45,52,54,.35);backdrop-filter:blur(2px);}
+  .seg{border-radius:16px;padding:.45rem .9rem;font-weight:600;transition:.15s;}
+  .progress-track{background:rgba(45,52,54,.08);border-radius:99px;height:10px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.22,.8,.36,1);}
 </style>
 </head>
-<body class="min-h-screen antialiased" style="background:#FAFAFA;color:#2D3436">
+<body>
 
-<!-- ==================== 顶部导航 ==================== -->
-<nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b" style="border-color:#EAECEF">
-  <div class="max-w-6xl mx-auto px-5 h-14 flex items-center gap-1 overflow-x-auto">
-    <span class="font-bold text-lg mr-3 shrink-0" style="color:#2A9D8F">Daisyn</span>
-    <button data-tab="ideas"  class="tab px-3.5 py-1.5 pill text-sm whitespace-nowrap transition-colors">原子想法</button>
-    <button data-tab="weekly" class="tab px-3.5 py-1.5 pill text-sm whitespace-nowrap transition-colors">周总结</button>
-    <button data-tab="plans"  class="tab px-3.5 py-1.5 pill text-sm whitespace-nowrap transition-colors">未来规划</button>
-    <button data-tab="skills" class="tab px-3.5 py-1.5 pill text-sm whitespace-nowrap transition-colors">技能增长</button>
-    <button data-tab="daily"  class="tab px-3.5 py-1.5 pill text-sm whitespace-nowrap transition-colors">每日打卡</button>
+<!-- ═══════════ 顶部 ═══════════ -->
+<header class="sticky top-0 z-40 bg-[#FAFAFA]/90 backdrop-blur border-b border-black/5">
+  <div class="max-w-md mx-auto px-5 py-3 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-2xl tint-pink flex items-center justify-center text-xl">🌼</div>
+    <div class="flex-1">
+      <div class="font-extrabold text-[17px] leading-tight">Daisyn</div>
+      <div id="topDate" class="text-[11px] text-[#2D3436]/50"></div>
+    </div>
+    <button id="btnConnect" class="btn-press text-[11px] font-bold px-3 py-2 rounded-xl tint-teal text-[#0F9B8E]">
+      ● 连接知识库
+    </button>
   </div>
-</nav>
+</header>
 
-<main class="max-w-6xl mx-auto px-5 py-8">
+<!-- ═══════════ 页面容器 ═══════════ -->
+<div id="pager-wrap">
+  <div id="pager" class="pager">
 
-<!-- ==================== 模块一：原子想法（Notion 柔和色块） ==================== -->
-<section id="m-ideas" class="module fade-in" style="background:#F7F9FC;color:#2C3E50;border-radius:8px" hidden>
-  <div class="p-6 md:p-8">
-    <div class="flex items-baseline justify-between mb-1">
-      <h2 class="text-lg font-semibold tracking-wide">原子想法</h2>
-      <span class="text-xs" style="color:#2C3E50;opacity:.5">一个想法 = 一条记录</span>
-    </div>
-    <hr class="my-4" style="border:none;border-top:1px solid #E3E8EF">
-    <div class="flex gap-2 mb-6">
-      <input id="ideaInput" placeholder="记下一个想法……" class="flex-1 px-4 py-2.5 text-sm outline-none" style="background:#fff;border:1px solid #E3E8EF;border-radius:8px">
-      <button id="ideaAdd" class="px-5 py-2.5 text-sm text-white" style="background:#9B59B6;border-radius:8px">记下</button>
-    </div>
-    <div id="ideaList" class="space-y-3"></div>
-  </div>
-</section>
+    <!-- ─────── P0 今日 · 想法 ─────── -->
+    <section class="page">
+      <div class="max-w-md mx-auto px-5 pt-5 pb-28 space-y-4">
 
-<!-- ==================== 模块二：周总结（柔和多巴胺） ==================== -->
-<section id="m-weekly" class="module fade-in" style="background:#F5F5F5;color:#2D3436;border-radius:16px" hidden>
-  <div class="p-6 md:p-8">
-    <h2 class="text-lg font-semibold mb-1">周总结</h2>
-    <p class="text-xs mb-6" style="opacity:.55">每周一次，诚实作答。选择一个回答，或有话直讲。</p>
-    <div id="weeklyQs" class="space-y-4"></div>
-    <div class="mt-6 flex justify-end">
-      <button id="weeklySave" class="pill px-6 py-2.5 text-sm text-white font-medium" style="background:#8A2BE2">保存本周总结</button>
-    </div>
-    <div class="mt-8">
-      <h3 class="text-sm font-semibold mb-3" style="opacity:.7">往期回顾</h3>
-      <div id="weeklyHistory" class="space-y-3"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== 模块三：未来规划（Apple Watch 风） ==================== -->
-<section id="m-plans" class="module fade-in" style="background:#FAFAFA;color:#2D3436;border-radius:24px" hidden>
-  <div class="p-6 md:p-8">
-    <div class="p-4 mb-6 text-sm leading-relaxed" style="background:rgba(255,107,157,.12);border-radius:16px;border-left:4px solid #FF6B9D">
-      请确保自己完全充分理智的结合现实情况与自身考虑过后，再填写长期目标。
-    </div>
-
-    <div id="plansMain">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">未来规划</h2>
-        <button id="plansStatsBtn" class="pill px-4 py-2 text-xs" style="background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06)">📊 统计视图（右滑）</button>
-      </div>
-      <div class="flex flex-col items-center justify-center py-10 mb-6" style="background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-        <button id="planAdd" class="w-20 h-20 text-4xl flex items-center justify-center" style="background:#4ECDC4;color:#fff;border-radius:9999px">＋</button>
-        <p class="mt-3 text-sm font-medium">添加目标</p>
-      </div>
-      <div id="planList" class="space-y-4"></div>
-    </div>
-
-    <div id="plansStats" class="hidden">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-semibold">目标完成情况</h2>
-        <button id="plansBackBtn" class="pill px-4 py-2 text-xs" style="background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06)">← 返回目标列表</button>
-      </div>
-      <div class="p-6 flex flex-col sm:flex-row items-center gap-8" style="background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-        <div class="relative w-44 h-44 shrink-0">
-          <div id="donut" class="w-full h-full" style="border-radius:9999px"></div>
-          <div class="absolute inset-4 bg-white flex flex-col items-center justify-center" style="border-radius:9999px">
-            <span id="donutDone" class="text-2xl font-bold">0</span>
-            <span class="text-[10px]" style="opacity:.55">本月完成</span>
+        <!-- 模块A · 原子想法 -->
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#FF6B9D"></span>
+            <h2 class="font-extrabold">原子想法</h2>
+            <span class="ml-auto text-[11px] text-[#2D3436]/50">来自 <span class="wl" data-note="灵感收集箱">[[灵感收集箱]]</span></span>
+          </div>
+          <p class="text-[11px] text-[#2D3436]/50 mb-3">00-Inbox 中尚未归档的灵感，每周日由整理引擎分流</p>
+          <div id="ideaList" class="space-y-2"></div>
+          <div class="flex gap-2 mt-3">
+            <input id="ideaInput" placeholder="现在脑子里冒出了什么？" class="flex-1 text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] focus:bg-black/[.06] transition">
+            <button onclick="addIdea()" class="btn-press px-4 rounded-2xl text-white text-[13px] font-bold" style="background:#FF6B9D">记下</button>
           </div>
         </div>
-        <div id="donutLegend" class="flex-1 space-y-2 text-sm w-full"></div>
-      </div>
-      <p class="mt-3 text-xs text-center" style="opacity:.5">记录周期：一个月一记</p>
-    </div>
-  </div>
-</section>
 
-<!-- ==================== 模块四：技能增长（Muji 柔和 + 修仙奖池） ==================== -->
-<section id="m-skills" class="module fade-in" style="background:#F8F9FA;color:#343A40;border-radius:16px" hidden>
-  <div class="p-6 md:p-8">
-    <h2 class="text-lg font-semibold mb-1">技能增长</h2>
-    <p class="text-xs mb-6" style="opacity:.55">勾选 = 修为到手，奖励从对应奖池掉落。</p>
-
-    <div class="grid md:grid-cols-2 gap-5">
-      <div class="p-5" style="background:#fff;border-radius:16px">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold text-sm" style="color:#2A9D8F">想要的技能</h3>
-          <button id="skillAdd" class="pill px-3.5 py-1.5 text-xs text-white" style="background:#F4A261">＋ 添加</button>
+        <!-- 模块D · 每日打卡 -->
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#4ECDC4"></span>
+            <h2 class="font-extrabold">每日日常打卡</h2>
+            <span id="clockNow" class="ml-auto text-[11px] text-[#2D3436]/50 font-mono"></span>
+          </div>
+          <p class="text-[11px] text-[#2D3436]/50 mb-3">点青色对号完成 · 与目标同名会自动长进度 · 23:00 后未完成会弹原因分析</p>
+          <div id="dailyList" class="space-y-2"></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="openModal('mAddTask')" class="btn-press flex-1 py-2.5 rounded-2xl tint-teal text-[#0F9B8E] text-[13px] font-bold">＋ 单个任务</button>
+            <button onclick="openModal('mAddSet')" class="btn-press flex-1 py-2.5 rounded-2xl tint-purple text-[#7C5CE0] text-[13px] font-bold">🗂 任务集批量</button>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <button onclick="simulateNight()" class="btn-press text-[11px] font-bold px-3 py-1.5 rounded-xl tint-yellow text-[#9A7B00]">⏰ 模拟 23:00</button>
+            <span class="text-[10px] text-[#2D3436]/40">今天已勾 <b id="todayDoneCount">0</b> 项</span>
+          </div>
         </div>
-        <div class="flex gap-2 mb-4">
-          <input id="skillInput" placeholder="技能名，如：爬虫" class="flex-1 px-3.5 py-2 text-sm outline-none" style="background:#F8F9FA;border-radius:12px">
+      </div>
+    </section>
+
+    <!-- ─────── P1 规划 ─────── -->
+    <section class="page">
+      <div class="max-w-md mx-auto px-5 pt-5 pb-28 space-y-4">
+        <div class="card p-4 tint-yellow" style="background:rgba(255,217,61,0.15)">
+          <div class="text-[12px] font-bold text-[#8A6D00] leading-relaxed">
+            ⚠️ 请确保自己完全充分理智的结合现实情况与自身考虑过后再填写长期目标
+          </div>
         </div>
-        <div id="skillWanted" class="space-y-2.5"></div>
-      </div>
-      <div class="p-5" style="background:#fff;border-radius:16px">
-        <h3 class="font-semibold text-sm mb-4" style="color:#E76F51">拥有的技能</h3>
-        <div id="skillOwned" class="space-y-2.5"></div>
-      </div>
-    </div>
 
-    <h3 class="font-semibold text-sm mt-10 mb-4">奖池</h3>
-    <div id="poolList" class="space-y-4"></div>
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#A78BFA"></span>
+            <h2 class="font-extrabold">未来规划</h2>
+            <span class="text-[11px] text-[#2D3436]/50 ml-auto">→ 右滑看月度扇形统计</span>
+          </div>
+          <div id="goalList" class="space-y-3"></div>
+          <button onclick="openAddGoal()" class="btn-press w-full mt-3 py-3 rounded-2xl text-white text-[13px] font-bold" style="background:#A78BFA">＋ 添加目标</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────── P2 统计 ─────── -->
+    <section class="page">
+      <div class="max-w-md mx-auto px-5 pt-5 pb-28 space-y-4">
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#FFD93D"></span>
+            <h2 class="font-extrabold">月度目标扇形统计</h2>
+          </div>
+          <div class="flex items-center gap-4">
+            <div id="pieBox" class="shrink-0"></div>
+            <div id="pieLegend" class="flex-1 space-y-1.5 text-[12px]"></div>
+          </div>
+          <hr class="divider my-4">
+          <div class="text-[11px] font-bold text-[#2D3436]/60 mb-2">近 6 个月完成数</div>
+          <div id="monthBars" class="flex items-end gap-2 h-24"></div>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#4ECDC4"></span>
+            <h2 class="font-extrabold">打卡历史计数</h2>
+          </div>
+          <div id="historyList" class="space-y-2.5 text-[13px]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────── P3 技能 ─────── -->
+    <section class="page">
+      <div class="max-w-md mx-auto px-5 pt-5 pb-28 space-y-4">
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#FF6B9D"></span>
+            <h2 class="font-extrabold">技能增长</h2>
+            <button onclick="openModal('mAddSkill')" class="btn-press ml-auto text-[12px] font-bold px-3 py-1.5 rounded-xl tint-pink text-[#E0447C]">＋ 加技能</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-[11px] font-bold text-[#E0447C] mb-2">想要的技能</div>
+              <div id="wantedBox" class="space-y-2"></div>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-[#0F9B8E] mb-2">拥有的技能</div>
+              <div id="ownedBox" class="space-y-2"></div>
+            </div>
+          </div>
+          <div class="mt-3 text-[10px] text-[#2D3436]/45 leading-relaxed" id="diffLegend"></div>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#FFD93D"></span>
+            <h2 class="font-extrabold">奖池系统</h2>
+          </div>
+          <p class="text-[11px] text-[#2D3436]/50 mb-3">修成正果时按难度掉落 · 每个奖池可「叠加」自定义奖励 · 领取后变灰保留</p>
+          <div id="poolList" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────── P4 复盘 · 引擎 ─────── -->
+    <section class="page">
+      <div class="max-w-md mx-auto px-5 pt-5 pb-28 space-y-4">
+
+        <!-- 模块A · 周总结 -->
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#A78BFA"></span>
+            <h2 class="font-extrabold">周总结</h2>
+            <span id="weekNo" class="ml-auto text-[11px] text-[#2D3436]/50 font-mono"></span>
+          </div>
+          <div id="weeklyBox" class="space-y-4"></div>
+          <div class="flex gap-2 mt-4">
+            <button onclick="saveWeekly()" class="btn-press flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#FF6B9D">保存本周复盘</button>
+            <button onclick="syncWeekly()" class="btn-press flex-1 py-2.5 rounded-2xl tint-teal text-[#0F9B8E] text-[13px] font-bold">同步到知识库</button>
+          </div>
+        </div>
+
+        <!-- 自动化整理引擎 -->
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#6BCB77"></span>
+            <h2 class="font-extrabold">Obsidian 整理引擎</h2>
+          </div>
+          <p class="text-[11px] text-[#2D3436]/50 mb-3">文件移动先输出计划 → 你确认 → 才执行 · 日志写入 <span class="wl" data-note="处理日志-2026-09-27">00-Inbox/处理日志</span></p>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button onclick="runInboxCleanup()" class="btn-press py-2.5 rounded-2xl tint-green text-[#3E9E4A] text-[12px] font-bold">📥 Inbox<br>清理</button>
+            <button onclick="runLitCompile()" class="btn-press py-2.5 rounded-2xl tint-purple text-[#7C5CE0] text-[12px] font-bold">📖 文献<br>编译</button>
+            <button onclick="runOrphanPatrol()" class="btn-press py-2.5 rounded-2xl tint-yellow text-[#9A7B00] text-[12px] font-bold">🏝 孤岛<br>巡检</button>
+          </div>
+          <div id="planBox"></div>
+          <div class="rounded-2xl p-3 font-mono text-[11px] leading-relaxed text-[#DFE6E9] soft-scroll overflow-y-auto" style="background:#2D3436;max-height:220px" id="engineLog"></div>
+        </div>
+
+        <p class="text-center text-[10px] text-[#2D3436]/35 pb-2">数据仅存于本机浏览器 localStorage · 连接知识库后可读写 D:\myvault\myvault</p>
+      </div>
+    </section>
+
   </div>
-</section>
-
-<!-- ==================== 模块五：每日打卡（Airbnb 风） ==================== -->
-<section id="m-daily" class="module fade-in" style="background:#FFFFFF;color:#484848;border-radius:16px" hidden>
-  <div class="p-6 md:p-8 border" style="border-color:#EBEBEB;border-radius:16px">
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-      <div>
-        <h2 class="text-lg font-semibold">每日打卡</h2>
-        <p id="dailyDate" class="text-xs" style="color:#767676"></p>
-      </div>
-      <div class="flex gap-2">
-        <button id="dailyAddBtn" class="pill px-4 py-2 text-sm text-white shadow-sm" style="background:#FF5A5F">＋ 今日任务</button>
-        <button id="taskSetBtn" class="pill px-4 py-2 text-sm shadow-sm" style="background:#fff;border:1px solid #FF5A5F;color:#FF5A5F">任务集</button>
-        <button id="dailyStatsBtn" class="pill px-4 py-2 text-sm shadow-sm" style="background:#fff;border:1px solid #00A699;color:#00A699">统计（右滑）</button>
-      </div>
-    </div>
-
-    <div id="dailyMain">
-      <div id="dailyList" class="space-y-3"></div>
-      <p id="dailyHint" class="mt-4 text-xs" style="color:#767676"></p>
-    </div>
-
-    <div id="dailyStats" class="hidden">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold text-sm">完成次数</h3>
-        <button id="dailyBackBtn" class="pill px-4 py-1.5 text-xs" style="background:#fff;border:1px solid #00A699;color:#00A699">← 返回今日</button>
-      </div>
-      <div id="countList" class="space-y-3"></div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- ==================== 通用弹窗 ==================== -->
-<div id="modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4" style="background:rgba(20,20,20,.35)">
-  <div id="modalBox" class="bg-white w-full max-w-md p-6 fade-in" style="border-radius:20px"></div>
 </div>
 
+<!-- ═══════════ 底部导航 ═══════════ -->
+<nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-black/5">
+  <div class="max-w-md mx-auto grid grid-cols-5 px-2 py-2" id="tabBar"></div>
+</nav>
+
+<!-- ═══════════ 通用弹层 ═══════════ -->
+<div id="modalRoot"></div>
+<div id="toastRoot" class="fixed left-1/2 -translate-x-1/2 top-16 z-[95] space-y-2 pointer-events-none"></div>
+<div id="dropRoot"></div>
+
 <script>
-/* ============ 存储 ============ */
-const KEY='daisyn_v1';
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-function defDB(){return{ideas:[],weekly:[],plans:[],skills:{wanted:[],owned:[]},
- pools:{special:[],p1:[],p2:[],p3:[],p4:[]},taskSets:[],counts:{},
- daily:{date:todayStr(),tasks:[]}};}
-let DB;try{DB=Object.assign(defDB(),JSON.parse(localStorage.getItem(KEY))||{});}catch(e){DB=defDB();}
-const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
-function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ══════════════════════════════════════════════════════════════
+   Daisyn · 个人成长工作台
+   数据源双通道：
+   ① MockAdapter   —— 以真实库内容为种子的模拟数据（默认）
+   ② VaultAdapter  —— File System Access API 直连本地 Obsidian 库
+   双链规范：所有生成笔记使用裸 [[双链]]，无代码块包裹、无反斜杠转义
+   ══════════════════════════════════════════════════════════════ */
 
-/* ============ 弹窗 ============ */
-const modal=document.getElementById('modal'),mbox=document.getElementById('modalBox');
-function openModal(html){mbox.innerHTML=html;modal.classList.remove('hidden');modal.classList.add('flex');}
-function closeModal(){modal.classList.add('hidden');modal.classList.remove('flex');}
-modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('[data-close]'))closeModal();});
-
-/* ============ 导航 ============ */
-const TABS={ideas:'#9B59B6',weekly:'#8A2BE2',plans:'#4ECDC4',skills:'#F4A261',daily:'#FF5A5F'};
-const NAVBG={ideas:'#F7F9FC',weekly:'#F5F5F5',plans:'#FAFAFA',skills:'#F8F9FA',daily:'#FFFFFF'};
-let curTab='ideas';
-function switchTab(t){
-  curTab=t;
-  document.querySelectorAll('.module').forEach(m=>m.hidden=true);
-  document.getElementById('m-'+t).hidden=false;
-  document.body.style.background=NAVBG[t];
-  document.querySelectorAll('.tab').forEach(b=>{
-    const on=b.dataset.tab===t;
-    b.classList.toggle('tab-active',on);
-    b.style.background=on?TABS[t]:'transparent';
-    b.style.color=on?'#fff':'#555';
-  });
-  ({ideas:renderIdeas,weekly:renderWeekly,plans:renderPlans,skills:renderSkills,daily:renderDaily})[t]();
-}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
-
-/* ============ 模块一：原子想法 ============ */
-const IDEA_COLORS=['#9B59B6','#1ABC9C','#F39C12','#E74C3C','#3498DB'];
-function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
-function renderIdeas(){
-  const box=document.getElementById('ideaList');
-  if(!DB.ideas.length){box.innerHTML='<p class="text-sm py-8 text-center" style="color:#2C3E50;opacity:.4">还没有想法，先记一个。</p>';return;}
-  box.innerHTML=DB.ideas.slice().reverse().map((it,i)=>{
-    const c=IDEA_COLORS[i%IDEA_COLORS.length];
-    return `<div class="flex items-start gap-3 p-4" style="background:#fff;border-radius:8px;border:1px solid #EDF0F4">
-      <span class="mt-0.5 w-2 h-2 shrink-0" style="background:${c};border-radius:2px"></span>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm leading-relaxed break-words">${esc(it.text)}</p>
-        <p class="text-[11px] mt-1.5" style="color:#2C3E50;opacity:.4">${it.ts}</p>
-      </div>
-      <button data-del-idea="${it.id}" class="text-xs shrink-0 hover:opacity-100" style="color:#2C3E50;opacity:.3">删除</button>
-    </div>`;}).join('');
-}
-document.getElementById('ideaAdd').addEventListener('click',addIdea);
-document.getElementById('ideaInput').addEventListener('keydown',e=>{if(e.key==='Enter')addIdea();});
-function addIdea(){
-  const inp=document.getElementById('ideaInput'),v=inp.value.trim();
-  if(!v)return;
-  DB.ideas.push({id:uid(),text:v,ts:new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})});
-  inp.value='';save();renderIdeas();
-}
-document.getElementById('ideaList').addEventListener('click',e=>{
-  const b=e.target.closest('[data-del-idea]');if(!b)return;
-  DB.ideas=DB.ideas.filter(x=>x.id!==b.dataset.delIdea);save();renderIdeas();
-});
-
-/* ============ 模块二：周总结 ============ */
-const WQ=[
- '本周有没有获得实际性提升的能力？如果有的话，知识性内容归档了吗？',
- '本周有哪些人际关系发生了对自己有影响的变化？本周自己的计划清单有没有完成 80% 以上？如果没有，请客观填写原因。',
- '本周自己有哪些旧的认知被刷新了？'
+/* ───────── 常量 ───────── */
+const C = { pink:'#FF6B9D', teal:'#4ECDC4', yellow:'#FFD93D', green:'#6BCB77', purple:'#A78BFA', ink:'#2D3436' };
+const DIFFS = ['筑基','金丹','元婴','化神','越级挑战'];
+const DIFF_COLOR = { '筑基':'#FFD9D9','金丹':'#FFADAD','元婴':'#FF8080','化神':'#EE5253','越级挑战':'#B33939' };
+const TIERS = [
+  { key:'化神',  label:'化神 · 一级奖池',  pool:'一级' },
+  { key:'元婴',  label:'元婴 · 二级奖池',  pool:'二级' },
+  { key:'金丹',  label:'金丹 · 三级奖池',  pool:'三级' },
+  { key:'筑基',  label:'筑基 · 四级奖池',  pool:'四级' },
+  { key:'越级挑战', label:'越级挑战 · 特级奖池', pool:'特级' },
 ];
-const WOPT=[
- {t:'包的呀！',bg:'rgba(50,205,50,.14)',c:'#1F8B1F',bd:'#32CD32'},
- {t:'并没有！',bg:'rgba(252,15,192,.10)',c:'#C2139B',bd:'#FC0FC0'},
- {t:'我有话讲......',bg:'rgba(0,255,255,.12)',c:'#0A7C7C',bd:'#00C8C8'}
+const SKIP_REASONS = [
+  'A. 安排不合理 / 精力不足','B. 突发情况','C. 纯懒','D. 质疑任务必要性','E. 可拖延至明日'
 ];
-const weeklyChoice=[null,null,null];
-function renderWeekly(){
-  const box=document.getElementById('weeklyQs');
-  box.innerHTML=WQ.map((q,i)=>`
-   <div class="p-5" style="background:#fff;border-radius:16px;border-top:4px solid ${['#FC0FC0','#00FFFF','#8A2BE2'][i]}">
-     <p class="text-sm font-medium leading-relaxed mb-3">${i+1}. ${q}</p>
-     <div class="flex flex-wrap gap-2 mb-2" data-qgroup="${i}">
-       ${WOPT.map((o,j)=>`<button data-q="${i}" data-o="${j}" class="pill px-4 py-1.5 text-xs transition-all" style="background:${o.bg};color:${o.c};border:1.5px solid ${o.bd}">${o.t}</button>`).join('')}
-     </div>
-     <textarea data-wtext="${i}" placeholder="有话请讲……" class="w-full px-3.5 py-2 text-xs outline-none hidden" style="background:#F5F5F5;border-radius:12px;min-height:64px"></textarea>
-   </div>`).join('');
-  box.addEventListener('click',e=>{
-    const b=e.target.closest('[data-q]');if(!b)return;
-    const qi=+b.dataset.q,oi=+b.dataset.o;
-    weeklyChoice[qi]=oi;
-    b.parentElement.querySelectorAll('button').forEach(x=>{x.style.fontWeight='400';x.style.transform='none';});
-    b.style.fontWeight='600';b.style.transform='scale(1.04)';
-    const ta=document.querySelector(`[data-wtext="${qi}"]`);
-    ta.classList.toggle('hidden',oi!==2);
-  });
-  renderWeeklyHistory();
-}
-function renderWeeklyHistory(){
-  const box=document.getElementById('weeklyHistory');
-  if(!DB.weekly.length){box.innerHTML='<p class="text-xs py-4" style="opacity:.4">还没有记录。</p>';return;}
-  box.innerHTML=DB.weekly.slice().reverse().map(w=>`
-   <div class="p-4" style="background:#fff;border-radius:16px">
-     <p class="text-xs font-semibold mb-2" style="color:#8A2BE2">${w.date}</p>
-     ${w.answers.map((a,i)=>`<div class="text-xs mb-1.5 leading-relaxed"><span style="opacity:.45">Q${i+1}</span> <b>${WOPT[a.choice].t}</b>${a.text?`<span style="opacity:.7"> —— ${esc(a.text)}</span>`:''}</div>`).join('')}
-   </div>`).join('');
-}
-document.getElementById('weeklySave').addEventListener('click',()=>{
-  if(weeklyChoice.some(c=>c===null)){openModal(`<p class="text-sm mb-4">三个问题都选一下再保存哦。</p><button data-close class="pill px-4 py-2 text-xs text-white" style="background:#8A2BE2">好的</button>`);return;}
-  const answers=weeklyChoice.map((c,i)=>{
-    const ta=document.querySelector(`[data-wtext="${i}"]`);
-    return {choice:c,text:c===2?ta.value.trim():''};
-  });
-  DB.weekly.push({id:uid(),date:new Date().toLocaleDateString('zh-CN')+'（第 '+getWeekNum()+' 周）',answers});
-  save();weeklyChoice.fill(null);renderWeekly();
-  openModal(`<p class="text-sm mb-4">本周总结已归档，下周继续。</p><button data-close class="pill px-4 py-2 text-xs text-white" style="background:#8A2BE2">收到</button>`);
-});
-function getWeekNum(){const d=new Date();const s=new Date(d.getFullYear(),0,1);return Math.ceil(((d-s)/86400000+s.getDay()+1)/7);}
+const WEEKLY_QS = [
+  '本周有没有获得实际性提升的能力？知识性内容归档了吗？',
+  '本周哪些人际关系发生了对自己有影响的变化？计划清单完成率？',
+  '本周哪些旧认知被刷新了？'
+];
+const QUICK_OPTS = ['包的呀！','并没有！','我有话讲...'];
 
-/* ============ 模块三：未来规划 ============ */
-function renderPlans(){
-  const box=document.getElementById('planList');
-  const today=todayStr();
-  if(!DB.plans.length){box.innerHTML='<p class="text-sm text-center py-6" style="opacity:.4">还没有目标。</p>';}
-  else box.innerHTML=DB.plans.slice().reverse().map(p=>{
-    const overdue=p.progress<100&&p.end<today;
-    const c=p.progress>=100?'#6BCB77':overdue?'#FF6B9D':'#4ECDC4';
-    return `<div class="p-5" style="background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div class="min-w-0">
-          <h4 class="font-semibold text-sm break-words">${esc(p.name)}</h4>
-          <p class="text-[11px] mt-1" style="opacity:.5">${p.start} → ${p.end} · ${p.type==='short'?'短期目标':'长期目标'}${overdue?' · <span style="color:#FF6B9D">已逾期</span>':p.progress>=100?' · <span style="color:#6BCB77">已完成 🎉</span>':''}</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-xl font-bold tabular-nums" style="color:${c}">${p.progress}<span class="text-xs">%</span></span>
-          <button data-del-plan="${p.id}" class="text-xs" style="opacity:.3">✕</button>
-        </div>
-      </div>
-      <div style="height:8px;background:#F0F1F3;border-radius:9999px;overflow:hidden">
-        <div style="height:100%;width:${p.progress}%;background:${c};border-radius:9999px;transition:width .5s"></div>
-      </div>
-      <p class="text-[10px] mt-2" style="opacity:.45">与「每日打卡」同名任务打卡一次 +10%</p>
-    </div>`;}).join('');
-  renderDonut();
+/* 真实知识库索引（用于双链不生成死链：只链向确实存在的笔记） */
+const VAULT_INDEX = [
+  '灵感收集箱','蓝桥杯备赛计划','大创项目-校园智能导览系统','课程设计-数据结构可视化工具',
+  '领域索引','错题本-数据结构','高数-第三章 微分中值定理','读书笔记-刻意练习',
+  '标签体系','笔记模板','处理日志-2026-09-27','欢迎'
+];
+
+/* ───────── 状态 ───────── */
+const todayStr = () => new Date().toISOString().slice(0,10);
+function defaultState(){
+  const t = new Date(), d = n => { const x = new Date(t); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); };
+  return {
+    ideas: [
+      { id:'i1', text:'想做一个「错题自动归档」的 Obsidian 插件，按错误类型打标签', source:'灵感收集箱', archived:false, cls:'长期知识点' },
+      { id:'i2', text:'把《刻意练习》里的方法论整理成复习 SOP 模板', source:'灵感收集箱', archived:false, cls:'长期知识点' },
+      { id:'i3', text:'试试用 MCP 把 GitHub 上的开源笔记模板导入知识库', source:'灵感收集箱', archived:false, cls:'长期知识点' },
+    ],
+    daily: [
+      { id:'d1', name:'背单词 20 个', set:'英语', count:12, dates:[todayStr()], skips:[] },
+      { id:'d2', name:'算法题一道', set:'蓝桥杯', count:8, dates:[], skips:[] },
+      { id:'d3', name:'读书 30 分钟', set:'日常', count:5, dates:[], skips:[] },
+      { id:'d4', name:'运动 30 分钟', set:'日常', count:3, dates:[], skips:[] },
+      { id:'d5', name:'23:30 前睡觉', set:'作息', count:9, dates:[], skips:[] },
+    ],
+    goals: [
+      { id:'g1', name:'蓝桥杯省赛冲进前 10%', type:'short', deadline:d(60), created:d(-20), link:'算法题一道', log:6, finishedAt:null },
+      { id:'g2', name:'大创申报书定稿', type:'short', deadline:d(14), created:d(-6), link:'', log:2, finishedAt:null },
+      { id:'g3', name:'养成每周精读一篇论文的习惯', type:'long', deadline:d(120), created:d(-40), link:'读书 30 分钟', log:9, finishedAt:null },
+    ],
+    skills: {
+      wanted: [
+        { id:'s1', name:'英语学术写作', diff:'元婴' },
+        { id:'s2', name:'Vue3', diff:'金丹' },
+        { id:'s3', name:'Prompt 工程', diff:'筑基' },
+      ],
+      owned: [
+        { id:'s4', name:'Python 基础', diff:'金丹' },
+        { id:'s5', name:'Git 协作', diff:'筑基' },
+      ]
+    },
+    rewards: {
+      '化神': [ {n:'一顿豪华火锅',e:'🍲',claimed:false},{n:'心愿好物 ≤300 元',e:'🛍️',claimed:false},{n:'周末两天完全放假',e:'🏝️',claimed:false} ],
+      '元婴': [ {n:'一场电影',e:'🎬',claimed:false},{n:'游戏氪一单',e:'🎮',claimed:false},{n:'奶茶两杯',e:'🧋',claimed:false} ],
+      '金丹': [ {n:'一杯奶茶',e:'🧋',claimed:false},{n:'睡到自然醒',e:'😴',claimed:false},{n:'一集想看的剧',e:'📺',claimed:false} ],
+      '筑基': [ {n:'一块小蛋糕',e:'🍰',claimed:false},{n:'一集下饭视频',e:'🍚',claimed:false},{n:'睡前多刷 20 分钟手机',e:'📱',claimed:false} ],
+      '越级挑战': [ {n:'周边一日游',e:'🚄',claimed:false},{n:'心愿清单任意解锁一项',e:'🎁',claimed:false},{n:'请自己吃顿大餐',e:'🍽️',claimed:false} ],
+    },
+    weekly: { q1:{pick:'',note:''}, q2:{pick:'',note:''}, q3:{pick:'',note:''} },
+  };
 }
-function progressPlan(name){
-  let hit=false;
-  DB.plans.forEach(p=>{if(p.name===name&&p.progress<100){p.progress=Math.min(100,p.progress+10);hit=true;
-    if(p.progress===100)p.completedAt=todayStr();}});
-  if(hit){save();if(curTab==='plans')renderPlans();}
-  return hit;
+let S = load();
+function load(){
+  try{ const raw = localStorage.getItem('daisyn_v1'); if(raw){ const s = JSON.parse(raw); if(s && s.daily && s.goals) return s; } }catch(e){}
+  return defaultState();
 }
-function renderDonut(){
-  const today=todayStr(),month=today.slice(0,7);
-  const done=DB.plans.filter(p=>p.progress>=100&&(p.completedAt||'').startsWith(month)).length;
-  const act=DB.plans.filter(p=>p.progress<100&&p.end>=today).length;
-  const over=DB.plans.filter(p=>p.progress<100&&p.end<today).length;
-  const tot=done+act+over;
-  const d=document.getElementById('donut');
-  if(!tot){d.style.background='#F0F1F3';}
-  else{
-    const seg=[[done,'#6BCB77'],[act,'#4ECDC4'],[over,'#FF6B9D']];
-    let acc=0,parts=[];
-    seg.forEach(([n,c])=>{if(!n)return;const a=acc/tot*100,b=(acc+n)/tot*100;parts.push(`${c} ${a.toFixed(1)}% ${b.toFixed(1)}%`);acc+=n;});
-    d.style.background=`conic-gradient(${parts.join(',')})`;
+function save(){ localStorage.setItem('daisyn_v1', JSON.stringify(S)); }
+
+/* ───────── Vault 适配器（本地 Obsidian 直连） ───────── */
+const Vault = {
+  connected:false, root:null, files:new Map(), // path -> {dirHandle, fileHandle, name}
+  async connect(){
+    if(!window.showDirectoryPicker){ toast('当前浏览器不支持直连，请用 Chrome / Edge 打开本文件','warn'); return; }
+    try{
+      const root = await window.showDirectoryPicker({ mode:'readwrite' });
+      if(!(await root.getDirectoryHandle('00-Inbox',{create:false}))) throw 0;
+      this.root = root; this.files = new Map();
+      await this.walk(root, '');
+      this.connected = true;
+      document.getElementById('btnConnect').innerHTML = '● 已连接库';
+      document.getElementById('btnConnect').style.background = 'rgba(107,203,119,.15)';
+      document.getElementById('btnConnect').style.color = '#3E9E4A';
+      log(`已连接知识库：${root.name}，索引 ${this.files.size} 个文件`);
+      await loadLiveIdeas();
+      toast('知识库已连接，Inbox 想法已刷新');
+      renderIdeas();
+    }catch(e){
+      if(e && e.name !== 'AbortError'){ log('连接失败：'+(e.message||e)); toast('连接失败，请确认选择的是库根目录','warn'); }
+    }
+  },
+  async walk(dir, prefix){
+    for await (const [name, handle] of dir.entries()){
+      if(name.startsWith('.')) continue;
+      const path = prefix ? prefix + '/' + name : name;
+      if(handle.kind === 'directory'){ await this.walk(handle, path); }
+      else if(name.endsWith('.md') || name.endsWith('.canvas')){ this.files.set(path, { dirHandle:dir, fileHandle:handle, name }); }
+    }
+  },
+  exists(name){ return [...this.files.keys()].some(p => p.split('/').pop().replace(/\.md$/,'') === name.replace(/\.md$/,'')); },
+  async read(path){
+    const f = this.files.get(path); if(!f) return null;
+    const file = await f.fileHandle.getFile(); return await file.text();
+  },
+  async write(path, content){
+    const segs = path.split('/'); const fileName = segs.pop();
+    let dir = this.root;
+    for(const s of segs){ dir = await dir.getDirectoryHandle(s,{create:true}); }
+    const fh = await dir.getFileHandle(fileName,{create:true});
+    const w = await fh.createWritable(); await w.write(content); await w.close();
+    this.files.set(path, { dirHandle:dir, fileHandle:fh, name:fileName });
+    log(`写入：${path}`);
+  },
+  async append(path, line){
+    const old = (await this.read(path)) ?? '';
+    await this.write(path, old.replace(/\s*$/,'') + '\n' + line + '\n');
+  },
+  async move(from, to){
+    const content = await this.read(from); if(content === null) throw new Error('源文件不存在 '+from);
+    await this.write(to, content);
+    const f = this.files.get(from);
+    await f.dirHandle.removeEntry(f.name);
+    this.files.delete(from);
+    log(`移动：${from} → ${to}`);
+  },
+  async listDir(dirPrefix){
+    return [...this.files.keys()].filter(p => p.startsWith(dirPrefix + '/'));
   }
-  document.getElementById('donutDone').textContent=done;
-  document.getElementById('donutLegend').innerHTML=`
-    ${[['已完成','#6BCB77',done],['进行中','#4ECDC4',act],['已逾期','#FF6B9D',over]].map(([l,c,n])=>`
-      <div class="flex items-center gap-2"><span class="w-3 h-3" style="background:${c};border-radius:4px"></span><span class="flex-1">${l}</span><b class="tabular-nums">${n}</b></div>`).join('')}
-    <p class="text-xs pt-2" style="opacity:.5">统计周期：${month}（自然月）</p>`;
-}
-document.getElementById('plansStatsBtn').addEventListener('click',()=>{document.getElementById('plansMain').classList.add('hidden');document.getElementById('plansStats').classList.remove('hidden');renderDonut();});
-document.getElementById('plansBackBtn').addEventListener('click',()=>{document.getElementById('plansStats').classList.add('hidden');document.getElementById('plansMain').classList.remove('hidden');});
-document.getElementById('planList').addEventListener('click',e=>{
-  const b=e.target.closest('[data-del-plan]');if(!b)return;
-  DB.plans=DB.plans.filter(x=>x.id!==b.dataset.delPlan);save();renderPlans();
-});
-document.getElementById('planAdd').addEventListener('click',()=>{
-  openModal(`
-   <h3 class="font-semibold mb-4 text-sm">添加什么类型的目标？</h3>
-   <div class="grid grid-cols-2 gap-3">
-     <button data-ptype="short" class="p-5 text-left" style="background:rgba(78,205,196,.12);border-radius:16px"><b class="text-sm">短期目标</b><p class="text-[11px] mt-1" style="opacity:.6">时长 ≤ 3 个月</p></button>
-     <button data-ptype="long" class="p-5 text-left" style="background:rgba(255,107,157,.12);border-radius:16px"><b class="text-sm">长期目标</b><p class="text-[11px] mt-1" style="opacity:.6">时长 ≥ 3 个月，上不封顶</p></button>
-   </div>
-   <button data-close class="mt-4 text-xs" style="opacity:.4">取消</button>`);
-});
-document.getElementById('modalBox').addEventListener('click',e=>{
-  const b=e.target.closest('[data-ptype]');if(!b)return;
-  const type=b.dataset.ptype;
-  openModal(`
-   <h3 class="font-semibold mb-4 text-sm">${type==='short'?'短期目标':'长期目标'}</h3>
-   <input id="goalName" placeholder="目标名称（与每日打卡任务同名可联动进度）" class="w-full px-3.5 py-2.5 text-sm outline-none mb-3" style="background:#F6F7F8;border-radius:12px">
-   <div class="grid grid-cols-2 gap-3 mb-4">
-     <div><label class="text-xs block mb-1" style="opacity:.6">开始日期</label><input id="goalStart" type="date" value="${todayStr()}" class="w-full px-3 py-2 text-sm outline-none" style="background:#F6F7F8;border-radius:12px"></div>
-     <div><label class="text-xs block mb-1" style="opacity:.6">结束日期</label><input id="goalEnd" type="date" class="w-full px-3 py-2 text-sm outline-none" style="background:#F6F7F8;border-radius:12px"></div>
-   </div>
-   <p id="goalErr" class="text-xs mb-3 hidden" style="color:#E74C3C"></p>
-   <div class="flex gap-2 justify-end">
-     <button data-close class="pill px-4 py-2 text-xs" style="background:#F0F1F3">取消</button>
-     <button id="goalOk" class="pill px-5 py-2 text-xs text-white" style="background:#4ECDC4">确定</button>
-   </div>`);
-  document.getElementById('goalOk').addEventListener('click',()=>{
-    const name=document.getElementById('goalName').value.trim();
-    const s=document.getElementById('goalStart').value,t=document.getElementById('goalEnd').value;
-    const err=document.getElementById('goalErr');
-    if(!name||!s||!t){err.textContent='名称和起止日期都要填。';err.classList.remove('hidden');return;}
-    const days=(new Date(t)-new Date(s))/86400000;
-    if(days<1){err.textContent='结束日期要晚于开始日期。';err.classList.remove('hidden');return;}
-    if(type==='short'&&days>92){err.textContent='短期目标时长不能超过三个月（约 92 天），当前 '+days+' 天。';err.classList.remove('hidden');return;}
-    if(type==='long'&&days<92){err.textContent='长期目标时长不得少于三个月（约 92 天），当前 '+days+' 天。';err.classList.remove('hidden');return;}
-    DB.plans.push({id:uid(),name,type,start:s,end:t,progress:0,completedAt:null});
-    save();closeModal();switchTab('plans');
-  });
-});
+};
 
-/* ============ 模块四：技能增长 ============ */
-const DIFF=[
- {key:'筑基',pool:'p4',color:'#F5B7B1',poolName:'四级奖池'},
- {key:'金丹',pool:'p3',color:'#EC7063',poolName:'三级奖池'},
- {key:'元婴',pool:'p2',color:'#E74C3C',poolName:'二级奖池'},
- {key:'化神',pool:'p1',color:'#CB4335',poolName:'一级奖池'},
- {key:'越级挑战',pool:'special',color:'#922B21',poolName:'特级奖池'}
-];
-function renderSkills(){
-  const w=document.getElementById('skillWanted');
-  w.innerHTML=DB.skills.wanted.length?DB.skills.wanted.map(s=>{
-    const d=DIFF.find(x=>x.key===s.diff);
-    return `<label class="flex items-center gap-3 p-3 cursor-pointer" style="background:#F8F9FA;border-radius:12px">
-      <input type="checkbox" data-skill-check="${s.id}" class="w-4 h-4 accent-[#2A9D8F]">
-      <span class="flex-1 text-sm">${esc(s.name)}</span>
-      <span class="text-[10px] px-2 py-0.5" style="background:${d.color};color:#fff;border-radius:6px">${d.key}</span>
-    </label>`;}).join('')
-   :'<p class="text-xs py-3" style="opacity:.4">空空如也。</p>';
-  const o=document.getElementById('skillOwned');
-  o.innerHTML=DB.skills.owned.length?DB.skills.owned.map(s=>{
-    const d=DIFF.find(x=>x.key===s.diff);
-    return `<div class="flex items-center gap-3 p-3" style="background:#F8F9FA;border-radius:12px;${s.claimed?'filter:grayscale(.7);opacity:.75':''}">
-      <span class="text-sm flex-1">${esc(s.name)}</span>
-      <span class="text-[10px] px-2 py-0.5" style="background:${d.color};color:#fff;border-radius:6px">${d.key}</span>
-      ${s.claimed?'<span class="text-[10px]" style="color:#2A9D8F">✓ 已领取</span>'
-        :`<button data-claim="${s.id}" class="pill px-3 py-1 text-xs text-white" style="background:#E76F51">🎁 领取奖励</button>`}
-    </div>`;}).join('')
-   :'<p class="text-xs py-3" style="opacity:.4">修为尚浅，先去勾一个。</p>';
-  renderPools();
-}
-function renderPools(){
-  document.getElementById('poolList').innerHTML=DIFF.slice().reverse().map(d=>{
-    const items=DB.pools[d.pool];
-    return `<div class="p-5" style="background:#fff;border-radius:16px">
-      <div class="flex items-center justify-between mb-3">
-        <h4 class="text-sm font-semibold flex items-center gap-2"><span class="w-3 h-3" style="background:${d.color};border-radius:4px"></span>${d.poolName}<span class="text-[10px] font-normal" style="opacity:.5">${d.key}难度 · ${items.length} 件</span></h4>
-        <button data-pool-add="${d.pool}" class="pill px-3.5 py-1.5 text-xs text-white" style="background:#2A9D8F">＋ 叠加奖池</button>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        ${items.length?items.map(it=>`
-          <div class="flex items-center gap-2 px-3 py-2" style="background:#F8F9FA;border-radius:12px;${it.claimed?'filter:grayscale(1);opacity:.5':''}">
-            ${it.img?`<img src="${it.img}" class="w-8 h-8 object-cover" style="border-radius:8px">`:`<span class="text-xs">${esc(it.name)}</span>`}
-            ${it.claimed?'<span class="text-[9px]" style="color:#34495E">已领取</span>':''}
-          </div>`).join(''):'<p class="text-xs" style="opacity:.35">奖池空空，先叠加点奖励吧。</p>'}
-      </div>
-    </div>`;}).join('');
-}
-document.getElementById('skillAdd').addEventListener('click',()=>{
-  const v=document.getElementById('skillInput').value.trim();
-  if(!v){openModal(`<p class="text-sm mb-4">先填个技能名。</p><button data-close class="pill px-4 py-2 text-xs text-white" style="background:#F4A261">好</button>`);return;}
-  openModal(`
-   <h3 class="font-semibold mb-1 text-sm">「${esc(v)}」的难度是？</h3>
-   <p class="text-xs mb-4" style="opacity:.5">由易到难，红色由浅到深。</p>
-   <div class="space-y-2">
-     ${DIFF.map((d,i)=>`<button data-diff="${d.key}" class="w-full flex items-center justify-between px-4 py-3 text-white" style="background:${d.color};border-radius:12px">
-       <span class="text-sm font-medium">${d.key}</span><span class="text-[10px] opacity-80">${['入门级','进阶级','高手级','大师级','地狱级'][i]} · ${d.poolName}</span></button>`).join('')}
-   </div>
-   <button data-close class="mt-4 text-xs" style="opacity:.4">取消</button>`);
-  document.getElementById('modalBox').addEventListener('click',function pick(e){
-    const b=e.target.closest('[data-diff]');if(!b)return;
-    DB.skills.wanted.push({id:uid(),name:v,diff:b.dataset.diff,claimed:false});
-    document.getElementById('skillInput').value='';
-    save();closeModal();renderSkills();
-    this.removeEventListener('click',pick);
-  });
-});
-document.getElementById('skillWanted').addEventListener('change',e=>{
-  const cb=e.target.closest('[data-skill-check]');if(!cb||!cb.checked)return;
-  const s=DB.skills.wanted.find(x=>x.id===cb.dataset.skillCheck);if(!s)return;
-  DB.skills.wanted=DB.skills.wanted.filter(x=>x.id!==s.id);
-  DB.skills.owned.push({...s,claimed:false});
-  save();renderSkills();
-  for(let i=0;i<6;i++)setTimeout(dropFlower,i*260);
-});
-function dropFlower(){
-  const f=document.createElement('span');f.className='flower';f.textContent='🌸';
-  f.style.left=(10+Math.random()*80)+'vw';
-  document.body.appendChild(f);setTimeout(()=>f.remove(),3000);
-}
-document.getElementById('skillOwned').addEventListener('click',e=>{
-  const b=e.target.closest('[data-claim]');if(!b)return;
-  const s=DB.skills.owned.find(x=>x.id===b.dataset.claim);if(!s)return;
-  const d=DIFF.find(x=>x.key===s.diff);
-  const avail=DB.pools[d.pool].filter(it=>!it.claimed);
-  if(!avail.length){
-    openModal(`<p class="text-sm mb-4">「${d.poolName}」还是空的，先去叠加奖池，修为不等人。</p>
-      <button data-close class="pill px-4 py-2 text-xs text-white" style="background:#2A9D8F">这就去</button>`);
-    return;
+/* Inbox 实时想法：解析 00-Inbox 的未勾选列表项（跳过处理日志） */
+async function loadLiveIdeas(){
+  const paths = await Vault.listDir('00-Inbox');
+  const ideas = [];
+  for(const p of paths){
+    if(p.includes('处理日志')) continue;
+    const text = await Vault.read(p);
+    (text.match(/^- \[ \] .+$/gm) || []).forEach(l => {
+      ideas.push({ id:'L'+Math.random().toString(36).slice(2,8), text:l.replace(/^- \[ \] /,''), source:p.split('/').pop().replace(/\.md$/,''), archived:false, cls:'长期知识点' });
+    });
   }
-  const reward=avail[Math.floor(Math.random()*avail.length)];
-  openModal(`
-    <p class="text-xs mb-3" style="opacity:.55">「${esc(s.name)}」（${d.key}）触发 ${d.poolName}，掉落——</p>
-    <div class="p-5 text-center" style="background:#F8F9FA;border-radius:16px">
-      ${reward.img?`<img src="${reward.img}" class="max-h-36 mx-auto object-contain" style="border-radius:12px">`:`<p class="text-lg font-bold" style="color:#E76F51">${esc(reward.name)}</p>`}
+  if(ideas.length){ S.ideas = ideas.concat(S.ideas.filter(i => i.source !== '灵感收集箱')); save(); }
+  log(`从 00-Inbox 解析出 ${ideas.length} 条未归档想法`);
+}
+
+/* ───────── 工具 ───────── */
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* 裸双链：仅当目标笔记存在时生成，保证不产生死链 */
+function wikilink(name){
+  if(!VAULT_INDEX.includes(name) && !Vault.exists(name)) return esc(name);
+  return `<span class="wl" data-note="${esc(name)}">[[${esc(name)}]]</span>`;
+}
+function toast(msg, type='ok'){
+  const el = document.createElement('div');
+  const bg = type==='warn' ? 'rgba(255,107,157,.95)' : 'rgba(45,52,54,.92)';
+  el.className = 'fadein px-4 py-2.5 rounded-2xl text-[12px] font-bold text-white shadow-lg';
+  el.style.background = bg; el.textContent = msg;
+  $('toastRoot').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.4s'; setTimeout(()=>el.remove(),400); }, 2400);
+}
+function log(msg){
+  const line = document.createElement('div');
+  const t = new Date().toTimeString().slice(0,8);
+  line.textContent = `[${t}] ${msg}`;
+  line.style.whiteSpace = 'pre-wrap';
+  $('engineLog').appendChild(line);
+  $('engineLog').scrollTop = 1e6;
+  console.log('[Daisyn]', msg);
+}
+function daysLeft(dateStr){ return Math.ceil((new Date(dateStr+'T23:59:59') - new Date()) / 86400000); }
+function weekNo(){ const d = new Date(); const t = new Date(d.getFullYear(),0,1); return Math.ceil((((d-t)/86400000)+t.getDay()+1)/7); }
+
+/* ───────── 弹层 ───────── */
+function openModal(id){ const m = $(id); if(m){ m.classList.remove('hidden'); m.classList.add('flex'); } }
+function closeModal(id){ const m = $(id); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
+function modalShell(id, title, bodyHTML, footHTML=''){
+  return `<div id="${id}" class="hidden fixed inset-0 z-[80] modal-mask items-center justify-center p-6" onclick="if(event.target===this)closeModal('${id}')">
+    <div class="card w-full max-w-sm p-5 fadein max-h-[85vh] overflow-y-auto soft-scroll">
+      <div class="font-extrabold mb-3">${title}</div>
+      ${bodyHTML}
+      ${footHTML ? `<div class="flex gap-2 mt-4">${footHTML}</div>` : ''}
     </div>
-    <div class="flex justify-end gap-2 mt-4">
-      <button data-close class="pill px-4 py-2 text-xs" style="background:#F0F1F3">先不领</button>
-      <button id="claimOk" class="pill px-5 py-2 text-xs text-white" style="background:#2A9D8F">确认领取</button>
-    </div>`);
-  document.getElementById('claimOk').addEventListener('click',()=>{
-    reward.claimed=true;s.claimed=true;
-    save();closeModal();renderSkills();
-  });
-});
-document.getElementById('poolList').addEventListener('click',e=>{
-  const b=e.target.closest('[data-pool-add]');if(!b)return;
-  const pool=b.dataset.poolAdd,d=DIFF.find(x=>x.pool===pool);
-  openModal(`
-   <h3 class="font-semibold mb-1 text-sm">叠加「${d.poolName}」</h3>
-   <p class="text-xs mb-4" style="opacity:.5">写名字或上传实物图，数量不限。</p>
-   <input id="rewardName" placeholder="奖励名称，如：一顿火锅" class="w-full px-3.5 py-2.5 text-sm outline-none mb-3" style="background:#F8F9FA;border-radius:12px">
-   <div class="flex items-center gap-2 mb-4">
-     <input id="rewardImg" type="file" accept="image/*" class="text-xs">
-     <span id="imgName" class="text-xs" style="opacity:.5"></span>
-   </div>
-   <div class="flex justify-end gap-2">
-     <button data-close class="pill px-4 py-2 text-xs" style="background:#F0F1F3">完成</button>
-     <button id="rewardAdd" class="pill px-5 py-2 text-xs text-white" style="background:#F4A261">加入奖池</button>
-   </div>`);
-  let imgData=null;
-  document.getElementById('rewardImg').addEventListener('change',ev=>{
-    const f=ev.target.files[0];if(!f)return;
-    const r=new FileReader();
-    r.onload=()=>{imgData=r.result;document.getElementById('imgName').textContent='已选：'+f.name;};
-    r.readAsDataURL(f);
-  });
-  document.getElementById('rewardAdd').addEventListener('click',()=>{
-    const name=document.getElementById('rewardName').value.trim();
-    if(!name&&!imgData)return;
-    DB.pools[pool].push({id:uid(),name:imgData?'':name,img:imgData,claimed:false});
-    save();renderSkills();
-    document.getElementById('rewardName').value='';imgData=null;
-    document.getElementById('imgName').textContent='';
-    openModalKeepPool(pool,d);
-  });
-  function openModalKeepPool(){/* modal stays open until 完成 */}
+  </div>`;
+}
+document.addEventListener('click', e => {
+  const n = e.target.closest('[data-note]');
+  if(n) toast(`双链 → ${n.dataset.note}（Obsidian 中打开）`);
 });
 
-/* ============ 模块五：每日打卡 ============ */
-const REASONS=[
- 'A. 安排的不合理，精力分配不足',
- 'B. 不得已的突发情况打乱了计划',
- 'C. 就是纯懒',
- 'D. 我在质疑这个任务的必要性之后觉得没必要做',
- 'E. 现在不急，可以拖到明天'
-];
-function rolloverDaily(){
-  if(DB.daily.date!==todayStr()){DB.daily={date:todayStr(),tasks:[]};save();}
+/* ═══════════════ 模块A · 原子想法 ═══════════════ */
+function renderIdeas(){
+  const box = $('ideaList');
+  const list = S.ideas.filter(i => !i.archived);
+  box.innerHTML = list.length ? list.map(i => `
+    <div class="fadein rounded-2xl tint-pink px-4 py-3 text-[13px] leading-relaxed">
+      <div>${esc(i.text)}</div>
+      <div class="flex items-center gap-2 mt-1.5">
+        <span class="text-[10px] text-[#2D3436]/45">来源 ${wikilink(i.source)}</span>
+        <button onclick="archiveIdea('${i.id}')" class="btn-press ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg bg-white/70 text-[#E0447C]">归档→30-Resources</button>
+      </div>
+    </div>`).join('')
+    : `<div class="text-center text-[12px] text-[#2D3436]/40 py-4">收集箱空空如也，去记点想法吧 🌼</div>`;
 }
+async function addIdea(){
+  const v = $('ideaInput').value.trim(); if(!v) return;
+  $('ideaInput').value = '';
+  S.ideas.unshift({ id:'i'+Date.now(), text:v, source:'灵感收集箱', archived:false, cls:'长期知识点' });
+  save(); renderIdeas(); toast('想法已收进 Inbox');
+  if(Vault.connected){ try{ await Vault.append('00-Inbox/Daisyn 收集.md', `- [ ] ${v}`); }catch(e){ log('写入 Inbox 失败：'+e.message); } }
+  else log(`新增想法（本地）：${v}`);
+}
+async function archiveIdea(id){
+  const i = S.ideas.find(x => x.id === id); if(!i) return;
+  S.ideas = S.ideas.map(x => x.id===id ? {...x, archived:true} : x);
+  save(); renderIdeas(); toast('已交给整理引擎排队分流');
+  log(`归档请求（待引擎确认执行）：${i.text.slice(0,18)}…`);
+}
+
+/* ═══════════════ 模块D · 每日打卡 ═══════════════ */
+function isDone(t){ return t.dates.includes(todayStr()); }
 function renderDaily(){
-  rolloverDaily();
-  const now=new Date(),late=now.getHours()>=23;
-  document.getElementById('dailyDate').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-  const box=document.getElementById('dailyList');
-  if(!DB.daily.tasks.length){box.innerHTML='<p class="text-sm py-8 text-center" style="color:#767676;opacity:.6">今天还没有任务，加一个。</p>';}
-  else box.innerHTML=DB.daily.tasks.map(t=>{
-    const n=DB.counts[t.name]||0;
-    return `<div class="flex items-center gap-3 p-4" style="background:#fff;border:1px solid #EBEBEB;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-      <button data-check="${t.id}" class="w-6 h-6 shrink-0 flex items-center justify-center transition-all" style="border:2px solid ${t.done?'#00A699':'#DCE0E3'};background:${t.done?'#00A699':'#fff'};border-radius:9999px">
-        ${t.done?'<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="#fff" stroke-width="2"/></svg>':''}
+  const box = $('dailyList');
+  box.innerHTML = S.daily.map(t => {
+    const done = isDone(t);
+    return `<div class="fadein flex items-center gap-3 rounded-2xl px-4 py-3 ${done?'tint-teal':'bg-black/[.03]'}">
+      <button onclick="toggleDaily('${t.id}')" class="btn-press w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${done?'check-pop':''}"
+        style="background:${done?'#4ECDC4':'#fff'};box-shadow:0 2px 6px rgba(0,0,0,.08)">
+        ${done?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}
       </button>
       <div class="flex-1 min-w-0">
-        <p class="text-sm break-words" style="${t.done?'color:#B0BEC5;text-decoration:line-through':''}">${esc(t.name)}</p>
-        ${n?`<p class="text-[10px] mt-0.5" style="color:#00A699">累计 ${n} 次</p>`:''}
+        <div class="text-[13px] font-semibold ${done?'text-[#0F9B8E]':''} truncate">${esc(t.name)}</div>
+        ${t.set?`<div class="text-[10px] text-[#2D3436]/40">集合 · ${esc(t.set)}</div>`:''}
       </div>
-      ${!t.done&&late?`
-        <select data-reason="${t.id}" class="text-[11px] px-2 py-1 shrink-0" style="border:1px solid #FC642D;border-radius:9999px;color:#FC642D;background:#fff">
-          <option value="">未完成原因…</option>
-          ${REASONS.map((r,i)=>`<option value="${i}" ${t.reason===i?'selected':''}>${r}</option>`).join('')}
-        </select>`:''}
-      <button data-del-task="${t.id}" class="text-xs shrink-0" style="opacity:.25">✕</button>
-    </div>`;}).join('');
-  document.getElementById('dailyHint').textContent=late?'已过 23:00，未勾选的任务记为未完成，请选择原因。':'23:00 后未勾选的任务将记为未完成。';
-  renderCounts();
+      <span class="text-[10px] font-bold px-2 py-1 rounded-lg tint-teal text-[#0F9B8E] shrink-0">×${t.count}</span>
+      <button onclick="delDaily('${t.id}')" class="text-[#2D3436]/25 hover:text-[#FF6B9D] text-[13px] shrink-0">✕</button>
+    </div>`;
+  }).join('') || `<div class="text-center text-[12px] text-[#2D3436]/40 py-4">今天还没有任务</div>`;
+  $('todayDoneCount').textContent = S.daily.filter(isDone).length;
 }
-document.getElementById('dailyList').addEventListener('click',e=>{
-  const c=e.target.closest('[data-check]');
-  if(c){
-    const t=DB.daily.tasks.find(x=>x.id===c.dataset.check);if(!t)return;
-    t.done=!t.done;
-    if(t.done){
-      DB.counts[t.name]=(DB.counts[t.name]||0)+1;
-      const linked=progressPlan(t.name);
-      if(linked)toast(`「${t.name}」打卡成功，同名目标进度 +10%`);
-    }
-    save();renderDaily();return;
+function toggleDaily(id){
+  const t = S.daily.find(x => x.id===id); if(!t) return;
+  const today = todayStr();
+  if(isDone(t)){
+    t.dates = t.dates.filter(d => d !== today); t.count = Math.max(0, t.count-1);
+  } else {
+    t.dates.push(today); t.count++;
+    toast(`「${t.name}」完成！这件事你已经做了 ${t.count} 次`);
+    /* 关键联动：任务名与目标匹配 → 进度自动增长 */
+    S.goals.forEach(g => {
+      if(g.link === t.name || (g.link === '' && g.name.includes(t.name))){
+        g.link = t.name; g.log = (g.log||0) + 1;
+        const target = Math.max(7, daysLeft(g.deadline) + Math.round((new Date()-new Date(g.created))/86400000) + 1);
+        const pct = Math.min(100, Math.round(g.log/target*100));
+        if(pct >= 100 && !g.finishedAt){ g.finishedAt = today; toast(`🎉 目标达成：${g.name}`); }
+      }
+    });
   }
-  const d=e.target.closest('[data-del-task]');
-  if(d){DB.daily.tasks=DB.daily.tasks.filter(x=>x.id!==d.dataset.delTask);save();renderDaily();}
-});
-document.getElementById('dailyList').addEventListener('change',e=>{
-  const s=e.target.closest('[data-reason]');if(!s)return;
-  const t=DB.daily.tasks.find(x=>x.id===s.dataset.reason);
-  if(t){t.reason=s.value===''?null:+s.value;save();}
-});
-function renderCounts(){
-  const box=document.getElementById('countList');
-  const entries=Object.entries(DB.counts).sort((a,b)=>b[1]-a[1]);
-  box.innerHTML=entries.length?entries.map(([n,c],i)=>`
-    <div class="flex items-center gap-3 p-4" style="background:#fff;border:1px solid #EBEBEB;border-radius:12px">
-      <span class="pill px-2.5 py-0.5 text-xs text-white" style="background:${['#FF5A5F','#00A699','#FC642D','#FFD54F','#B0BEC5'][i%5]}">${i+1}</span>
-      <p class="flex-1 text-sm">这件事我已经做了 <b style="color:#00A699">${c}</b> 次</p>
-      <span class="text-xs" style="color:#767676">${esc(n)}</span>
-    </div>`).join('')
-   :'<p class="text-sm py-6 text-center" style="color:#767676;opacity:.6">还没有累计记录。</p>';
+  save(); renderDaily(); renderGoals();
 }
-document.getElementById('dailyStatsBtn').addEventListener('click',()=>{document.getElementById('dailyMain').classList.add('hidden');document.getElementById('dailyStats').classList.remove('hidden');renderCounts();});
-document.getElementById('dailyBackBtn').addEventListener('click',()=>{document.getElementById('dailyStats').classList.add('hidden');document.getElementById('dailyMain').classList.remove('hidden');});
-document.getElementById('dailyAddBtn').addEventListener('click',()=>{
-  openModal(`
-   <h3 class="font-semibold mb-4 text-sm">添加今日任务</h3>
-   <input id="taskName" placeholder="任务名（与目标同名可联动进度）" class="w-full px-3.5 py-2.5 text-sm outline-none mb-3" style="background:#F7F7F7;border-radius:12px">
-   ${DB.taskSets.length?`<p class="text-xs mb-2" style="color:#767676">从任务集批量添加：</p>
-   <div class="space-y-2 mb-3">${DB.taskSets.map(s=>`<button data-set-add="${s.id}" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm" style="background:#FFF1F1;border-radius:12px"><span>${esc(s.name)}</span><span class="text-xs" style="color:#FF5A5F">${s.tasks.length} 项 ›</span></button>`).join('')}</div>`:''}
-   <div class="flex justify-end gap-2">
-     <button data-close class="pill px-4 py-2 text-xs" style="background:#F0F0F0">关闭</button>
-     <button id="taskOk" class="pill px-5 py-2 text-xs text-white" style="background:#FF5A5F">添加</button>
-   </div>`);
-  document.getElementById('taskOk').addEventListener('click',()=>{
-    const v=document.getElementById('taskName').value.trim();
-    if(!v)return;
-    if(DB.daily.tasks.some(t=>t.name===v))return;
-    DB.daily.tasks.push({id:uid(),name:v,done:false,reason:null});
-    save();closeModal();renderDaily();
-  });
-});
-document.getElementById('modalBox').addEventListener('click',e=>{
-  const b=e.target.closest('[data-set-add]');if(!b)return;
-  const set=DB.taskSets.find(x=>x.id===b.dataset.setAdd);if(!set)return;
-  let added=0;
-  set.tasks.forEach(name=>{
-    if(!DB.daily.tasks.some(t=>t.name===name)){DB.daily.tasks.push({id:uid(),name,done:false,reason:null});added++;}
-  });
-  save();closeModal();renderDaily();
-  toast(`已从「${set.name}」批量添加 ${added} 个任务`);
-});
-document.getElementById('taskSetBtn').addEventListener('click',()=>{
-  openModal(`
-   <h3 class="font-semibold mb-4 text-sm">任务集</h3>
-   <div class="flex gap-2 mb-4">
-     <input id="setName" placeholder="新建任务集名称，如：晨间Routine" class="flex-1 px-3.5 py-2 text-sm outline-none" style="background:#F7F7F7;border-radius:12px">
-     <button id="setCreate" class="pill px-4 py-2 text-xs text-white" style="background:#00A699">创建</button>
-   </div>
-   <div id="setList" class="space-y-3 max-h-72 overflow-auto"></div>
-   <button data-close class="mt-4 text-xs w-full" style="color:#767676">关闭</button>`);
-  renderSetList();
-  document.getElementById('setCreate').addEventListener('click',()=>{
-    const v=document.getElementById('setName').value.trim();if(!v)return;
-    DB.taskSets.push({id:uid(),name:v,tasks:[]});
-    document.getElementById('setName').value='';
-    save();renderSetList();
-  });
-  function renderSetList(){
-    const box=document.getElementById('setList');
-    box.innerHTML=DB.taskSets.length?DB.taskSets.map(s=>`
-      <div class="p-3.5" style="background:#F7F7F7;border-radius:12px">
-        <div class="flex items-center justify-between mb-2">
-          <b class="text-sm">${esc(s.name)}</b>
-          <button data-set-del="${s.id}" class="text-xs" style="opacity:.3">✕</button>
+function delDaily(id){ S.daily = S.daily.filter(x => x.id!==id); save(); renderDaily(); }
+function addTask(){
+  const n = $('taskName').value.trim(); if(!n) return;
+  S.daily.push({ id:'d'+Date.now(), name:n, set:$('taskSet').value.trim(), count:0, dates:[], skips:[] });
+  save(); renderDaily(); closeModal('mAddTask'); toast('任务已添加');
+}
+function addSet(){
+  const lines = $('setLines').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  const set = $('setName').value.trim();
+  if(!lines.length) return;
+  lines.forEach(n => S.daily.push({ id:'d'+Date.now()+Math.random(), name:n, set, count:0, dates:[], skips:[] }));
+  save(); renderDaily(); closeModal('mAddSet'); toast(`任务集「${set||'未命名'}」已批量添加 ${lines.length} 项`);
+}
+/* 23:00 未完成分析 */
+function nightCheck(){
+  const h = new Date().getHours();
+  const undone = S.daily.filter(t => !isDone(t));
+  if(!undone.length) return;
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mNight', '🌙 23:00 · 未完成任务分析',
+    `<p class="text-[12px] text-[#2D3436]/60 mb-3">今天以下任务未勾选，选一个原因（会记入复盘）：</p>` +
+    undone.map(t => `
+      <div class="rounded-2xl bg-black/[.03] p-3 mb-2">
+        <div class="text-[13px] font-semibold mb-2">${esc(t.name)}</div>
+        <div class="flex flex-wrap gap-1.5">
+          ${SKIP_REASONS.map((r,idx)=>`<button onclick="pickReason('${t.id}',${idx})" class="btn-press text-[11px] font-bold px-2.5 py-1.5 rounded-xl tint-yellow text-[#8A6D00]">${r}</button>`).join('')}
         </div>
-        <div class="flex flex-wrap gap-1.5 mb-2">
-          ${s.tasks.map((t,i)=>`<span class="pill px-2.5 py-1 text-[11px]" style="background:#fff;border:1px solid #E0E0E0">${esc(t)} <button data-task-del="${s.id}:${i}" style="opacity:.4">✕</button></span>`).join('')||'<span class="text-xs" style="color:#767676;opacity:.6">空</span>'}
-        </div>
-        <div class="flex gap-2">
-          <input data-set-task="${s.id}" placeholder="加一条任务" class="flex-1 px-3 py-1.5 text-xs outline-none" style="background:#fff;border-radius:9999px">
-          <button data-set-task-add="${s.id}" class="pill px-3 py-1.5 text-xs text-white" style="background:#00A699">＋</button>
-        </div>
-      </div>`).join(''):'<p class="text-xs" style="color:#767676;opacity:.6">还没有任务集。</p>';
-  }
-  document.getElementById('setList').addEventListener('click',e=>{
-    const add=e.target.closest('[data-set-task-add]');
-    if(add){
-      const s=DB.taskSets.find(x=>x.id===add.dataset.setTaskAdd);
-      const inp=document.querySelector(`[data-set-task="${s.id}"]`);
-      const v=inp.value.trim();if(!v||!s)return;
-      s.tasks.push(v);save();renderSetList();return;
-    }
-    const td=e.target.closest('[data-task-del]');
-    if(td){
-      const [sid,i]=td.dataset.taskDel.split(':');
-      const s=DB.taskSets.find(x=>x.id===sid);
-      if(s){s.tasks.splice(+i,1);save();renderSetList();}
-      return;
-    }
-    const del=e.target.closest('[data-set-del]');
-    if(del){DB.taskSets=DB.taskSets.filter(x=>x.id!==del.dataset.setDel);save();renderSetList();}
-  });
-});
-
-/* ============ Toast ============ */
-let toastTimer=null;
-function toast(msg){
-  let t=document.getElementById('toast');
-  if(!t){t=document.createElement('div');t.id='toast';
-    t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#00A699;color:#fff;padding:10px 22px;border-radius:9999px;font-size:13px;z-index:70;transition:opacity .3s';
-    document.body.appendChild(t);}
-  t.textContent=msg;t.style.opacity='1';
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.style.opacity='0',2400);
+      </div>`).join('')
+  ));
+  openModal('mNight');
+  log(`23:00 分析触发：${undone.length} 项未完成`);
+}
+function pickReason(tid, idx){
+  const t = S.daily.find(x=>x.id===tid);
+  t.skips.push({ date:todayStr(), reason:SKIP_REASONS[idx] });
+  save();
+  const card = [...document.querySelectorAll('#mNight .rounded-2xl')].find(el => el.textContent.includes(t.name));
+  if(card){ card.style.opacity='.4'; card.querySelector('div').innerHTML += `<span class="text-[10px] text-[#9A7B00] font-bold">已记录：${SKIP_REASONS[idx]}</span>`; }
+  log(`「${t.name}」未完成原因：${SKIP_REASONS[idx]}`);
+  if(!S.daily.some(x=>!isDone(x) && !x.skips.some(s=>s.date===todayStr()))) { closeModal('mNight'); $('mNight')?.remove(); toast('原因已记录，明天会更好 🌼'); }
+}
+function simulateNight(){
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mNight','',''));
+  $('mNight').remove(); nightCheck();
+  if($('mNight') && !S.daily.some(t=>!isDone(t))) toast('今天全部完成，没有需要分析的 🌼');
 }
 
-/* ============ 右滑手势（规划/打卡统计视图） ============ */
-let tx0=null;
-document.addEventListener('touchstart',e=>tx0=e.touches[0].clientX,{passive:true});
-document.addEventListener('touchend',e=>{
-  if(tx0===null)return;
-  const dx=e.changedTouches[0].clientX-tx0;tx0=null;
-  if(dx<-60){
-    if(curTab==='plans'&&!document.getElementById('plansStats').classList.contains('hidden'))return;
-    if(curTab==='plans')document.getElementById('plansStatsBtn').click();
-    if(curTab==='daily')document.getElementById('dailyStatsBtn').click();
-  }
-}, {passive:true});
+/* ═══════════════ 模块B · 未来规划 ═══════════════ */
+function goalPct(g){
+  const span = Math.max(7, Math.round((new Date(g.deadline)-new Date(g.created))/86400000)+1);
+  return Math.min(100, Math.round((g.log||0)/span*100));
+}
+function renderGoals(){
+  $('goalList').innerHTML = S.goals.map(g => {
+    const pct = goalPct(g), left = daysLeft(g.deadline);
+    const color = g.type==='short' ? C.pink : C.purple;
+    const done = pct >= 100;
+    return `<div class="fadein rounded-2xl ${done?'tint-green':'bg-black/[.03]'} p-4">
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg" style="background:${color}22;color:${color}">${g.type==='short'?'短期 <3个月':'长期 >3个月'}</span>
+        <span class="ml-auto text-[10px] font-mono ${left<7&&left>=0?'text-[#E0447C] font-bold':'text-[#2D3436]/45'}">${done?'✅ 已完成':(left<0?'已超期 '+(-left)+' 天':'剩 '+left+' 天')}</span>
+      </div>
+      <div class="font-bold text-[14px] mt-1.5">${esc(g.name)}</div>
+      <div class="progress-track mt-2.5"><div class="progress-fill" style="width:${pct}%;background:${done?C.green:color}"></div></div>
+      <div class="flex items-center mt-1.5 text-[10px] text-[#2D3436]/50">
+        <span>进度 ${pct}% · 截止 ${g.deadline}</span>
+        ${g.link?`<span class="ml-auto tint-teal text-[#0F9B8E] font-bold px-2 py-0.5 rounded-lg">🔗 打卡「${esc(g.link)}」+1</span>`:'<span class="ml-auto">未关联打卡</span>'}
+      </div>
+      <button onclick="delGoal('${g.id}')" class="text-[10px] text-[#2D3436]/30 mt-1.5 hover:text-[#FF6B9D]">删除目标</button>
+    </div>`;
+  }).join('') || `<div class="text-center text-[12px] text-[#2D3436]/40 py-4">还没有目标，理智地想一个？</div>`;
+}
+function delGoal(id){ S.goals = S.goals.filter(g=>g.id!==id); save(); renderGoals(); }
+let goalDraft = {};
+function openAddGoal(){
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mGoal1','添加目标 · 第 1 步',
+    `<p class="text-[12px] text-[#2D3436]/60 mb-3">这个目标是短跑还是马拉松？</p>
+     <div class="grid grid-cols-2 gap-3">
+       <button onclick="goalStep2('short')" class="btn-press rounded-2xl p-4 tint-pink text-left">
+         <div class="text-2xl mb-1">🌱</div><div class="font-extrabold text-[14px] text-[#E0447C]">短期</div><div class="text-[11px] text-[#2D3436]/55">&lt; 3 个月</div></button>
+       <button onclick="goalStep2('long')" class="btn-press rounded-2xl p-4 tint-purple text-left">
+         <div class="text-2xl mb-1">🌳</div><div class="font-extrabold text-[14px] text-[#7C5CE0]">长期</div><div class="text-[11px] text-[#2D3436]/55">&gt; 3 个月</div></button>
+     </div>`));
+  openModal('mGoal1');
+}
+function goalStep2(type){
+  goalDraft = { type };
+  closeModal('mGoal1'); $('mGoal1')?.remove();
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mGoal2','添加目标 · 第 2 步',
+    `<div class="space-y-3">
+      <div><label class="text-[11px] font-bold text-[#2D3436]/60">目标名称</label>
+        <input id="goalName" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mt-1" placeholder="例如：蓝桥杯省赛冲进前 10%"></div>
+      <div><label class="text-[11px] font-bold text-[#2D3436]/60">截止时间（时间选择器）</label>
+        <input id="goalDate" type="date" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mt-1"></div>
+      <div><label class="text-[11px] font-bold text-[#2D3436]/60">关联每日打卡（名字匹配可自动涨进度）</label>
+        <select id="goalLink" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mt-1">
+          <option value="">不关联</option>
+          ${S.daily.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}
+        </select></div>
+     </div>`,
+    `<button onclick="closeModal('mGoal2')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">取消</button>
+     <button onclick="saveGoal()" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:${type==='short'?C.pink:C.purple}">确立目标</button>`));
+  const d = new Date(); d.setDate(d.getDate() + (type==='short'?30:120));
+  $('goalDate').value = d.toISOString().slice(0,10);
+  $('goalDate').min = todayStr();
+  openModal('mGoal2');
+}
+function saveGoal(){
+  const name = $('goalName').value.trim(), deadline = $('goalDate').value, link = $('goalLink').value;
+  if(!name || !deadline){ toast('名称和截止时间都要填哦','warn'); return; }
+  S.goals.push({ id:'g'+Date.now(), name, type:goalDraft.type, deadline, created:todayStr(), link, log:0, finishedAt:null });
+  save(); renderGoals(); renderStats(); closeModal('mGoal2'); $('mGoal2')?.remove();
+  toast('目标已立下，进度条开始跑了');
+  log(`新目标：${name}（${goalDraft.type==='short'?'短期':'长期'}，截止 ${deadline}${link?'，联动打卡「'+link+'」':''}）`);
+}
 
-/* ============ 启动 ============ */
-switchTab('ideas');
+/* ═══════════════ 扇形统计 + 历史计数 ═══════════════ */
+function renderStats(){
+  /* 扇形图（SVG donut，扁平无渐变） */
+  const now = new Date();
+  const done = S.goals.filter(g => g.finishedAt && g.finishedAt.slice(0,7) === now.toISOString().slice(0,7)).length;
+  const active = S.goals.filter(g => !g.finishedAt && goalPct(g) > 0).length;
+  const idle = S.goals.filter(g => !g.finishedAt && goalPct(g) === 0).length;
+  const segs = [
+    { label:'本月已完成', v:done, color:C.green },
+    { label:'进行中', v:active, color:C.pink },
+    { label:'未启动', v:idle, color:'rgba(45,52,54,.15)' },
+  ].filter(s => s.v > 0);
+  const total = segs.reduce((a,b)=>a+b.v,0);
+  let svg = `<svg width="132" height="132" viewBox="0 0 132 132">`;
+  if(total > 0){
+    const R = 52, CIRC = 2*Math.PI*R; let acc = 0;
+    segs.forEach(s => {
+      const len = s.v/total*CIRC;
+      svg += `<circle cx="66" cy="66" r="${R}" fill="none" stroke="${s.color}" stroke-width="20"
+        stroke-dasharray="${len-2} ${CIRC-len+2}" stroke-dashoffset="${-acc+1}" transform="rotate(-90 66 66)" stroke-linecap="butt"/>`;
+      acc += len;
+    });
+  } else {
+    svg += `<circle cx="66" cy="66" r="52" fill="none" stroke="rgba(45,52,54,.08)" stroke-width="20"/>`;
+  }
+  svg += `<text x="66" y="62" text-anchor="middle" font-size="22" font-weight="800" fill="#2D3436">${done}</text>
+          <text x="66" y="80" text-anchor="middle" font-size="10" fill="rgba(45,52,54,.5)">本月完成</text></svg>`;
+  $('pieBox').innerHTML = svg;
+  $('pieLegend').innerHTML = segs.map(s => `
+    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-md" style="background:${s.color}"></span>
+    <span class="font-semibold">${s.label}</span><span class="ml-auto font-mono font-bold">${s.v}</span></div>`).join('')
+    || '<div class="text-[12px] text-[#2D3436]/40">暂无数据</div>'
+    + `<div class="text-[10px] text-[#2D3436]/40 mt-2">记录月度目标完成情况 · 本月 ${now.getMonth()+1} 月</div>`;
+  /* 近6个月条形 */
+  const bars = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = d.toISOString().slice(0,7);
+    const fin = S.goals.filter(g => g.finishedAt && g.finishedAt.slice(0,7)===key).length;
+    bars.push({ label:(d.getMonth()+1)+'月', v:fin });
+  }
+  const max = Math.max(1, ...bars.map(b=>b.v));
+  $('monthBars').innerHTML = bars.map(b => `
+    <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+      <span class="text-[10px] font-mono font-bold text-[#2D3436]/50">${b.v||''}</span>
+      <div class="w-full rounded-t-xl" style="height:${Math.max(6, b.v/max*70)}px;background:${b.v? C.green : 'rgba(45,52,54,.1)'}"></div>
+      <span class="text-[10px] text-[#2D3436]/45">${b.label}</span>
+    </div>`).join('');
+  /* 历史计数 */
+  const sorted = [...S.daily].sort((a,b)=>b.count-a.count);
+  $('historyList').innerHTML = sorted.map(t => `
+    <div class="fadein flex items-center gap-3">
+      <div class="w-9 h-9 rounded-2xl tint-teal flex items-center justify-center text-[14px] shrink-0">🔁</div>
+      <div class="flex-1">「${esc(t.name)}」我已经做了 <b class="text-[#0F9B8E] text-[15px] font-mono"> ${t.count} </b> 次</div>
+      ${t.skips.length?`<span class="text-[10px] tint-yellow text-[#9A7B00] font-bold px-2 py-1 rounded-lg">跳过${t.skips.length}次</span>`:''}
+    </div>`).join('') || '<div class="text-[12px] text-[#2D3436]/40">还没有打卡记录</div>';
+}
+
+/* ═══════════════ 模块C · 技能增长 + 奖池 ═══════════════ */
+function skillChip(s, side){
+  const col = DIFF_COLOR[s.diff];
+  const dark = ['化神','越级挑战'].includes(s.diff);
+  return `<div class="fadein rounded-2xl p-3 ${side==='wanted'?'bg-black/[.03]':'tint-green'}">
+    <div class="flex items-center gap-2">
+      <span class="w-10 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center shrink-0"
+        style="background:${col};color:${dark?'#fff':'#7A3B3B'}">${s.diff}</span>
+      <div class="text-[12px] font-bold truncate flex-1">${esc(s.name)}</div>
+    </div>
+    ${side==='wanted'
+      ? `<button onclick="learnSkill('${s.id}')" class="btn-press w-full mt-2 text-[11px] font-bold py-1.5 rounded-xl tint-pink text-[#E0447C]">✔ 我学会了！</button>`
+      : `<div class="text-[10px] text-[#3E9E4A] font-bold mt-2">已修成 · ${s.diff}</div>`}
+  </div>`;
+}
+function renderSkills(){
+  $('wantedBox').innerHTML = S.skills.wanted.map(s=>skillChip(s,'wanted')).join('') || '<div class="text-[11px] text-[#2D3436]/40 text-center py-3">暂无</div>';
+  $('ownedBox').innerHTML = S.skills.owned.map(s=>skillChip(s,'owned')).join('') || '<div class="text-[11px] text-[#2D3436]/40 text-center py-3">暂无</div>';
+  $('diffLegend').innerHTML = '难度阶梯（红块由浅到深）：' + DIFFS.map(d =>
+    `<span class="inline-flex items-center gap-1 mr-2"><span class="w-3 h-3 rounded" style="background:${DIFF_COLOR[d]}"></span>${d}</span>`).join('');
+  renderPools();
+}
+function learnSkill(id){
+  const s = S.skills.wanted.find(x=>x.id===id); if(!s) return;
+  S.skills.wanted = S.skills.wanted.filter(x=>x.id!==id);
+  S.skills.owned.push(s);
+  save(); renderSkills();
+  toast(`🎓 修成「${s.name}」（${s.diff}）`,'ok');
+  dropReward(s.diff);
+}
+/* 奖励掉落动画：从对应难度奖池随机掉一个未领取奖励 */
+function dropReward(diff){
+  const pool = S.rewards[diff] || [];
+  const avail = pool.filter(r => !r.claimed);
+  const r = avail.length ? avail[Math.floor(Math.random()*avail.length)] : null;
+  const chip = document.createElement('div');
+  chip.className = 'drop-chip';
+  chip.style.left = (20 + Math.random()*55) + '%';
+  const label = r ? `${r.e} ${r.n}` : '🎁 神秘奖励';
+  chip.innerHTML = `<div style="background:#fff;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px 16px;font-size:13px;font-weight:800;color:#2D3436;">${esc(label)}</div>`;
+  $('dropRoot').appendChild(chip);
+  setTimeout(()=>{ chip.remove(); toast(r ? `掉落「${r.n}」→ 已放入${diff}奖池，去领取！` : `${diff}奖池奖励已领完，去叠加一个吧`); }, 1600);
+  log(`技能转化成功，从【${diff}奖池】掉落：${label}`);
+}
+function renderPools(){
+  $('poolList').innerHTML = TIERS.map(t => {
+    const pool = S.rewards[t.key] || [];
+    return `<div class="fadein rounded-2xl bg-black/[.03] p-3.5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-2 h-5 rounded-full" style="background:${DIFF_COLOR[t.key]}"></span>
+        <span class="text-[12px] font-extrabold">${t.label}</span>
+        <button onclick="openStack('${t.key}')" class="btn-press ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg tint-pink text-[#E0447C]">＋ 叠加</button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        ${pool.map((r,i)=>`
+          <button onclick="claimReward('${t.key}',${i})" class="btn-press flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-bold ${r.claimed?'claimed bg-white':'tint-yellow text-[#8A6D00]'}" style="${r.claimed?'background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)':''}">
+            ${r.img?`<img src="${r.img}" class="w-5 h-5 rounded-md object-cover">`:`<span>${r.e||'⭐'}</span>`}
+            <span>${esc(r.n)}</span>
+            ${r.claimed?'<span class="text-[9px]">已领取</span>':'<span class="text-[9px] opacity-60">待领取</span>'}
+          </button>`).join('') || '<span class="text-[11px] text-[#2D3436]/40">空池，点「叠加」加奖励</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function claimReward(key, i){
+  const r = S.rewards[key][i];
+  r.claimed = !r.claimed;
+  save(); renderPools();
+  toast(r.claimed ? `已领取「${r.n}」，辛苦啦 🌼` : `已放回奖池`);
+}
+function openStack(key){
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mStack','叠加自定义奖励 · '+key+'奖池',
+    `<div class="space-y-3">
+      <div><label class="text-[11px] font-bold text-[#2D3436]/60">文字奖励</label>
+        <input id="stackText" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mt-1" placeholder="例如：看一场演唱会"></div>
+      <div><label class="text-[11px] font-bold text-[#2D3436]/60">或上传图片奖励</label>
+        <input id="stackImg" type="file" accept="image/*" class="w-full text-[12px] mt-1"></div>
+     </div>`,
+    `<button onclick="closeModal('mStack')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">取消</button>
+     <button onclick="stackReward('${key}')" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#FF6B9D">叠加进奖池</button>`));
+  openModal('mStack');
+}
+function stackReward(key){
+  const text = $('stackText').value.trim(), img = $('stackImg').files[0];
+  if(!text && !img){ toast('至少填一项','warn'); return; }
+  const finish = dataUrl => {
+    S.rewards[key].push({ n: text || '图片奖励', e:'⭐', img: dataUrl || null, claimed:false });
+    save(); renderPools(); closeModal('mStack'); $('mStack')?.remove();
+    toast(`已叠加到【${key}奖池】`);
+    log(`奖池叠加：${key} ← ${text || '图片奖励'}`);
+  };
+  if(img){
+    if(img.size > 300*1024){ toast('图片请压到 300KB 以内（localStorage 限制）','warn'); return; }
+    const fr = new FileReader(); fr.onload = () => finish(fr.result); fr.readAsDataURL(img);
+  } else finish(null);
+}
+function addSkill(){
+  const n = $('skillName').value.trim(), diff = $('skillDiff').value;
+  if(!n) return;
+  S.skills.wanted.push({ id:'s'+Date.now(), name:n, diff });
+  save(); renderSkills(); closeModal('mAddSkill'); toast(`「${n}」已加入修炼清单`);
+  log(`新技能修炼计划：${n}（难度 ${diff}）`);
+}
+
+/* ═══════════════ 模块A · 周总结 ═══════════════ */
+function renderWeekly(){
+  $('weekNo').textContent = `${new Date().getFullYear()} 第 ${weekNo()} 周`;
+  $('weeklyBox').innerHTML = WEEKLY_QS.map((q,qi) => {
+    const a = S.weekly['q'+(qi+1)];
+    return `<div class="rounded-2xl bg-black/[.03] p-4">
+      <div class="text-[13px] font-bold leading-relaxed mb-2">Q${qi+1} · ${esc(q)}</div>
+      <div class="flex gap-2 mb-2">
+        ${QUICK_OPTS.map(o=>`<button onclick="pickWeekly(${qi},'${o}')" class="btn-press seg text-[11px] ${a.pick===o?'text-white':'tint-pink text-[#E0447C]'}" style="${a.pick===o?'background:#FF6B9D':''}">${o}</button>`).join('')}
+      </div>
+      <textarea rows="2" oninput="S.weekly.q${qi+1}.note=this.value;save()" placeholder="空白处自由书写…" class="w-full text-[12px] px-3.5 py-2.5 rounded-xl bg-white focus:bg-white/80">${esc(a.note)}</textarea>
+    </div>`;
+  }).join('');
+}
+function pickWeekly(qi, opt){
+  S.weekly['q'+(qi+1)].pick = opt; save(); renderWeekly();
+}
+function saveWeekly(){ save(); toast('周复盘已保存到本地'); log('周总结已保存（localStorage）'); }
+function weeklyMarkdown(){
+  const y = new Date().getFullYear(), w = weekNo();
+  const L = [];
+  L.push('---');
+  L.push(`title: ${y}-W${w} 周复盘`);
+  L.push('tags: [类型/周复盘, 领域/个人成长]');
+  L.push(`created: ${todayStr()}`);
+  L.push('---','');
+  L.push(`# ${y} 第 ${w} 周复盘`,'');
+  WEEKLY_QS.forEach((q,qi)=>{
+    const a = S.weekly['q'+(qi+1)];
+    L.push(`## Q${qi+1} ${q}`);
+    L.push(`- 快答：${a.pick || '（未选）'}`);
+    if(a.note.trim()) L.push(`- 详述：${a.note.trim()}`);
+    L.push('');
+  });
+  const done = S.daily.filter(isDone).length;
+  L.push(`## 打卡概况`,'', `- 本页今日完成 ${done}/${S.daily.length} 项。历史计数与目标进度详见 Daisyn 工作台。`,'');
+  /* 裸双链：只链向库中真实存在的笔记 */
+  L.push(`## 关联`, '', `规则参考 ${wikilinkName('标签体系')} · 模板见 ${wikilinkName('笔记模板')} · 本周整理记录见 ${wikilinkName('处理日志-2026-09-27')}`,'');
+  return L.join('\n');
+}
+function wikilinkName(n){ return VAULT_INDEX.includes(n) ? `[[${n}]]` : n; }
+async function syncWeekly(){
+  const md = weeklyMarkdown();
+  if(!Vault.connected){
+    showPreview('周复盘预览（连接知识库后自动写入 00-Inbox）', md);
+    log('未连接知识库，仅生成周复盘预览，不落盘');
+    return;
+  }
+  try{
+    await Vault.write(`00-Inbox/周复盘-${new Date().getFullYear()}-W${weekNo()}.md`, md.replace(/<[^>]+>/g,''));
+    toast('周复盘已写入 00-Inbox');
+  }catch(e){ log('写入失败：'+e.message); toast('写入失败，详见引擎日志','warn'); }
+}
+function showPreview(title, md){
+  $('modalRoot').insertAdjacentHTML('beforeend', modalShell('mPrev', title,
+    `<pre class="text-[11px] leading-relaxed bg-black/[.04] rounded-2xl p-3.5 whitespace-pre-wrap soft-scroll" style="max-height:55vh">${esc(md)}</pre>`,
+    `<button onclick="closeModal('mPrev')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">关闭</button>
+     <button onclick="downloadText('周复盘.md', document.querySelector('#mPrev pre').textContent)" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#FF6B9D">下载 .md</button>`));
+  openModal('mPrev');
+}
+function downloadText(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type:'text/markdown'})); a.download = name; a.click();
+}
+
+/* ═══════════════ 自动化整理引擎 ═══════════════ */
+let pendingPlan = null;
+
+/* ① Inbox 清理：先输出计划，确认后执行 */
+async function runInboxCleanup(){
+  log('━━━ Inbox 清理引擎启动 ━━━');
+  const items = S.ideas.filter(i => !i.archived);
+  if(!items.length){ log('00-Inbox 无待分流条目，跳过。'); toast('收集箱是空的'); return; }
+  const plan = items.map(i => {
+    /* 分类规则：有截止日期→Projects；长期知识点→Resources(自动建子文件夹)；过时资料→Archives */
+    let to, reason;
+    if(/待办|截止|deadline|之前|ddl/i.test(i.text)){ to = '10-Projects/'; reason = '含截止日期的任务'; }
+    else if(/旧|过时|弃用|不再/.test(i.text)){ to = '40-Archives/'; reason = '过时资料'; }
+    else {
+      const sub = /插件|工具|自动化|MCP/i.test(i.text) ? '工具与自动化' : (/读书|书|方法论|SOP/i.test(i.text) ? '读书笔记' : '方法与工具');
+      to = `30-Resources/${sub}/`; reason = '长期知识点（自动建子文件夹）';
+    }
+    return { idea:i, to, reason };
+  });
+  pendingPlan = plan;
+  console.log('%c[Daisyn] Inbox 清理计划（待确认，未执行任何移动）','color:#FF6B9D;font-weight:bold');
+  console.table(plan.map(p => ({ 条目:p.idea.text.slice(0,20)+'…', 目标文件夹:p.to, 理由:p.reason })));
+  log(`已生成清理计划：${plan.length} 条 → 控制台已输出计划表，等待确认`);
+  $('planBox').innerHTML = `
+    <div class="fadein rounded-2xl tint-green p-3.5 mb-3">
+      <div class="text-[12px] font-extrabold text-[#3E9E4A] mb-2">📋 Inbox 清理计划（${plan.length} 条，尚未执行）</div>
+      <div class="space-y-1.5">
+        ${plan.map((p,idx)=>`<div class="text-[11px] bg-white/70 rounded-xl px-3 py-2">
+          <b>${esc(p.idea.text.slice(0,22))}${p.idea.text.length>22?'…':''}</b>
+          <span class="text-[#2D3436]/50"> → </span><span class="font-mono text-[#3E9E4A] font-bold">${p.to}</span>
+          <div class="text-[10px] text-[#2D3436]/45">${p.reason}</div>
+        </div>`).join('')}
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="executePlan()" class="btn-press flex-1 py-2 rounded-xl text-white text-[12px] font-bold" style="background:#6BCB77">✔ 确认执行</button>
+        <button onclick="$('planBox').innerHTML='';pendingPlan=null;log('已取消本次清理计划')" class="btn-press flex-1 py-2 rounded-xl bg-white/70 text-[12px] font-bold">取消</button>
+      </div>
+    </div>`;
+}
+async function executePlan(){
+  if(!pendingPlan) return;
+  log(`开始执行清理计划（${pendingPlan.length} 项）…`);
+  const logLines = [`## 引擎整理 · ${new Date().toLocaleString('zh-CN')}`,''];
+  for(const p of pendingPlan){
+    S.ideas = S.ideas.map(i => i.id===p.idea.id ? {...i, archived:true} : i);
+    logLines.push(`- ${p.idea.text.slice(0,24)}… → \`${p.to}\`（${p.reason}）`);
+    if(Vault.connected){
+      /* 实库模式：真实移动（条目以追加文件形式归档，避免整文件误移） */
+      try{
+        const fname = `原子想法-${p.idea.text.slice(0,8)}.md`;
+        await Vault.write(p.to + fname,
+`---
+tags: [类型/原子笔记, 状态/待整理]
+created: ${todayStr()}
+---
+
+# ${p.idea.text}
+
+> 分流自 ${wikilinkName(p.idea.source)} · 理由：${p.reason}
+`);
+        log(`已写入 ${p.to}${fname}`);
+      }catch(e){ log('写入失败：'+e.message); }
+    }
+  }
+  /* 双链去死链检查 */
+  const links = logLines.join('\n').match(/\[\[([^\]]+)\]\]/g) || [];
+  links.forEach(l => { const n = l.slice(2,-2); if(!VAULT_INDEX.includes(n) && !(Vault.connected && Vault.exists(n))) log(`⚠ 双链检查：[[${n}]] 目标不存在，已降级为纯文本（不生成死链）`); });
+  /* 写处理日志 */
+  const logMd = logLines.join('\n') + '\n';
+  if(Vault.connected){
+    try{
+      const path = `00-Inbox/处理日志-${todayStr()}.md`;
+      const old = await Vault.read(path) ?? '';
+      await Vault.write(path, old.replace(/\s*$/,'') + '\n\n' + logMd);
+      log(`处理日志已写入 ${path}`);
+    }catch(e){ log('日志写入失败：'+e.message); }
+  } else {
+    log('（模拟模式）处理日志内容如下，未落盘：');
+    console.log(logMd);
+  }
+  pendingPlan = null; $('planBox').innerHTML = '';
+  save(); renderIdeas();
+  toast('清理完成，详见引擎日志');
+}
+
+/* ② 文献编译：PDFs → 原子笔记（不编造，不确定标待确认） */
+async function runLitCompile(){
+  log('━━━ 文献编译引擎启动 ━━━');
+  let pdfs = [];
+  if(Vault.connected){
+    pdfs = (await Vault.listDir('30-Resources/PDFs')).filter(p => /\.pdf$/i.test(p));
+  } else {
+    log('（模拟模式）30-Resources/PDFs 当前为空 —— 与真实库一致');
+  }
+  if(!pdfs.length){
+    log('未发现 PDF 文献：跳过编译，不编造原文没有的内容。');
+    log('示例原子笔记格式（来自笔记模板）：');
+    const demo =
+`---
+title: 注意力机制的优势（示例骨架）
+tags: [类型/原子笔记, 领域/科研入门]
+created: ${todayStr()}
+source: 待放入 PDF 后自动填充
+---
+
+（正文：用自己的话复述这一个想法，不贪多。此处待确认 —— 引擎未读取到原文，不编造。）
+
+> 来源：[[待确认]]`;
+    console.log(demo);
+    showPreview('原子笔记示例骨架（PDF 放入 30-Resources/PDFs 后自动编译）', demo);
+    return;
+  }
+  for(const p of pdfs){
+    const name = p.split('/').pop().replace(/\.pdf$/i,'');
+    log(`发现文献：${name}（浏览器端无法解析 PDF 正文，生成待确认骨架）`);
+    const note =
+`---
+title: ${name} · 观点提炼（待确认）
+tags: [类型/原子笔记, 领域/科研入门]
+created: ${todayStr()}
+source: ${name}
+---
+
+（复述正文：⚠ 待确认 —— PDF 原文需在 Obsidian 中人工精读后补全，引擎不编造数据。）
+
+> 来源：[[${name}]]`;
+    if(Vault.connected){ await Vault.write(`30-Resources/科研笔记/${name}·原子笔记.md`, note); }
+    console.log(note);
+  }
+  toast('文献骨架已生成（待确认标记已加）');
+}
+
+/* ③ 孤岛巡检：无双向链接的笔记 → 报告，不自动修改 */
+async function runOrphanPatrol(){
+  log('━━━ 孤岛巡检引擎启动 ━━━');
+  /* 建立链接图（连接库时用实库内容，否则用真实库快照） */
+  let notes = [], linkMap = {};
+  if(Vault.connected){
+    for(const [path, meta] of Vault.files){
+      if(!path.endsWith('.md') || path.includes('90-Meta') || path.includes('处理日志')) continue;
+      const name = meta.name.replace(/\.md$/,'');
+      notes.push({ name, path });
+      const text = await Vault.read(path) || '';
+      linkMap[name] = [...(text.match(/\[\[([^\]|#]+)/g) || [])].map(m => m.slice(2).trim());
+    }
+  } else {
+    /* 真实库快照（2026-09-27 巡检结果） */
+    notes = VAULT_INDEX.filter(n => !['标签体系','笔记模板','处理日志-2026-09-27','欢迎'].includes(n))
+      .map(n => ({ name:n, path:'' }));
+    linkMap = {
+      '灵感收集箱': [], '蓝桥杯备赛计划': [], '大创项目-校园智能导览系统': [], '课程设计-数据结构可视化工具': [],
+      '领域索引': ['蓝桥杯备赛计划','大创项目-校园智能导览系统'], '错题本-数据结构': [], '高数-第三章 微分中值定理': [],
+      '读书笔记-刻意练习': [],
+    };
+  }
+  const hasLink = n => (linkMap[n]?.length) || notes.some(x => x.name!==n && (linkMap[x.name]||[]).includes(n));
+  const orphans = notes.filter(n => !hasLink(n.name));
+  const SUG = {
+    '错题本-数据结构': ['课程设计-数据结构可视化工具','高数-第三章 微分中值定理'],
+    '高数-第三章 微分中值定理': ['错题本-数据结构'],
+    '读书笔记-刻意练习': ['灵感收集箱'],
+    '灵感收集箱': ['读书笔记-刻意练习','领域索引'],
+    '蓝桥杯备赛计划': ['错题本-数据结构'],
+    '大创项目-校园智能导览系统': ['领域索引'],
+    '课程设计-数据结构可视化工具': ['错题本-数据结构'],
+  };
+  const lines = ['# 关联建议报告','', `> 生成于 ${new Date().toLocaleString('zh-CN')} · 孤岛巡检只建议不改动，等你确认后再手动加链。`,''];
+  lines.push(`共巡检 ${notes.length} 篇笔记，发现孤岛 ${orphans.length} 篇：`,'');
+  orphans.forEach(n => {
+    const sug = SUG[n.name] || [];
+    lines.push(`## ${n.name}`);
+    lines.push(`- 状态：无任何双向链接（既无出链也无入链）`);
+    lines.push(sug.length ? `- 建议关联：${sug.map(x => `[[${x}]]`).join('、')}（按关键词重合推断）` : '- 建议关联：暂无把握，人工判断');
+    lines.push('');
+    log(`孤岛：${n.name}${sug.length ? ' → 建议 → ' + sug.map(x=>'[['+x+']]').join('、') : ''}`);
+  });
+  lines.push('---','','**说明**：以上建议均指向库内已存在的笔记，不会产生死链。确认后可手动添加，或回复我逐条执行。');
+  const md = lines.join('\n');
+  console.log(md);
+  showPreview(`关联建议报告（${orphans.length} 篇孤岛 · 暂不自动修改）`, md);
+  if(Vault.connected){
+    try{ await Vault.write('00-Inbox/关联建议报告.md', md); log('报告已写入 00-Inbox/关联建议报告.md'); }catch(e){}
+  } else {
+    log('（模拟模式）报告仅预览 + 控制台输出，未修改任何笔记');
+  }
+}
+
+/* ═══════════════ 页面切换（滑动 + Tab） ═══════════════ */
+const TABS = [
+  { icon:'🌻', label:'今日' }, { icon:'🧭', label:'规划' }, { icon:'📊', label:'统计' },
+  { icon:'⚔️', label:'技能' }, { icon:'🔧', label:'复盘' },
+];
+let curPage = 0;
+function goPage(i){
+  curPage = Math.max(0, Math.min(4, i));
+  $('pager').style.transform = `translateX(-${curPage*20}%)`;
+  [...$('tabBar').children].forEach((el,idx)=> el.classList.toggle('tab-on', idx===curPage));
+  if(curPage===2) renderStats();
+}
+function initTabs(){
+  $('tabBar').innerHTML = TABS.map((t,i)=>`
+    <button onclick="goPage(${i})" class="btn-press flex flex-col items-center gap-0.5 py-1.5 rounded-2xl text-[10px] font-bold text-[#2D3436]/45">
+      <span class="text-[17px]">${t.icon}</span>${t.label}
+    </button>`).join('');
+}
+(function initSwipe(){
+  let x0 = null, y0 = null;
+  const wrap = $('pager-wrap');
+  wrap.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive:true});
+  wrap.addEventListener('touchend', e => {
+    if(x0===null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)*1.5) goPage(curPage + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, {passive:true});
+  /* 桌面端：左右方向键 */
+  document.addEventListener('keydown', e => {
+    if(e.key==='ArrowRight') goPage(curPage+1);
+    if(e.key==='ArrowLeft') goPage(curPage-1);
+  });
+})();
+
+/* ═══════════════ 静态弹层模板 ═══════════════ */
+function staticModals(){
+  $('modalRoot').insertAdjacentHTML('beforeend',
+    modalShell('mAddTask','添加每日任务',
+      `<input id="taskName" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mb-2" placeholder="任务名（如：背单词 20 个）">
+       <input id="taskSet" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04]" placeholder="所属集合（可选，如：英语）">`,
+      `<button onclick="closeModal('mAddTask')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">取消</button>
+       <button onclick="addTask()" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#4ECDC4">加入打卡</button>`)
+    + modalShell('mAddSet','任务集 · 批量添加',
+      `<input id="setName" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mb-2" placeholder="集合名（如：期末周冲刺）">
+       <textarea id="setLines" rows="5" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04]" placeholder="每行一个任务：&#10;复习高数第三章&#10;录入错题&#10;精读论文并写摘要"></textarea>`,
+      `<button onclick="closeModal('mAddSet')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">取消</button>
+       <button onclick="addSet()" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#A78BFA">批量添加</button>`)
+    + modalShell('mAddSkill','添加修炼技能',
+      `<input id="skillName" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04] mb-2" placeholder="技能名（如：英语学术写作）">
+       <div class="text-[11px] font-bold text-[#2D3436]/60 mb-1.5">难度阶梯（红块由浅到深）</div>
+       <select id="skillDiff" class="w-full text-[13px] px-4 py-2.5 rounded-2xl bg-black/[.04]">
+         ${DIFFS.map(d=>`<option value="${d}">${d}</option>`).join('')}
+       </select>`,
+      `<button onclick="closeModal('mAddSkill')" class="flex-1 py-2.5 rounded-2xl bg-black/[.05] text-[13px] font-bold">取消</button>
+       <button onclick="addSkill()" class="flex-1 py-2.5 rounded-2xl text-white text-[13px] font-bold" style="background:#FF6B9D">开始修炼</button>`)
+  );
+}
+
+/* ═══════════════ 启动 ═══════════════ */
+(function boot(){
+  const d = new Date();
+  const wd = ['日','一','二','三','四','五','六'][d.getDay()];
+  $('topDate').textContent = `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日 · 星期${wd}`;
+  setInterval(()=>{ const n = new Date(); $('clockNow').textContent = n.toTimeString().slice(0,5); }, 1000);
+  initTabs(); staticModals();
+  renderIdeas(); renderDaily(); renderGoals(); renderSkills(); renderWeekly(); renderStats();
+  goPage(0);
+  log('Daisyn 工作台就绪 · 数据源：模拟数据（真实库快照）');
+  log('点击右上「连接知识库」可用浏览器直连 D:/myvault/myvault 读写');
+  log('双链规范已启用：仅链向库内真实存在的笔记，不产生死链');
+  /* 23:00 自动触发 */
+  setTimeout(()=>{ if(new Date().getHours() >= 23) nightCheck(); }, 1500);
+})();
 </script>
 </body>
 </html>
