@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人工作台 · My Workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    ::selection { background: #111827; color: #fff; }
+    .done-task { text-decoration: line-through; color: #9ca3af; }
+    .fade-in { animation: fadeIn .5s ease both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none;} }
+    .quote-enter { animation: quoteIn .45s ease both; }
+    @keyframes quoteIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body class="bg-neutral-50 text-neutral-900 min-h-screen antialiased">
+
+  <!-- ============ 顶部：日期 + 名言 ============ -->
+  <header class="border-b border-neutral-200 bg-white">
+    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <p class="text-xs font-medium tracking-[0.2em] text-neutral-400 uppercase mb-2">Personal Workspace</p>
+        <h1 id="today" class="text-3xl font-bold tracking-tight"></h1>
+        <p id="todayDetail" class="text-sm text-neutral-500 mt-1"></p>
+      </div>
+      <div class="md:text-right md:max-w-md">
+        <div id="quoteBox" class="quote-enter">
+          <p id="quote" class="text-sm leading-relaxed text-neutral-600"></p>
+          <p id="quoteAuthor" class="text-xs text-neutral-400 mt-1"></p>
+        </div>
+        <button id="shuffleQuote" class="mt-2 text-xs text-neutral-400 hover:text-neutral-900 transition-colors underline underline-offset-4">换一句</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ 统计条 ============ -->
+  <section class="border-b border-neutral-200 bg-white/70">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex flex-wrap gap-x-8 gap-y-1 text-xs text-neutral-500">
+      <span>待办 <strong id="statTodo" class="text-neutral-900">0</strong> 项</span>
+      <span>进行中项目 <strong id="statProject" class="text-neutral-900">0</strong> 个</span>
+      <span>平均进度 <strong id="statProgress" class="text-neutral-900">0%</strong></span>
+      <span>近期笔记 <strong id="statNote" class="text-neutral-900">0</strong> 篇</span>
+    </div>
+  </section>
+
+  <!-- ============ 三栏主体 ============ -->
+  <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- 左：今日待办 -->
+    <section class="lg:col-span-4 fade-in">
+      <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-sm font-semibold tracking-wider text-neutral-900">今日待办</h2>
+        <span class="text-xs text-neutral-400">00-Inbox</span>
+      </div>
+      <div id="todoList" class="space-y-5"></div>
+    </section>
+
+    <!-- 中：项目进度看板 -->
+    <section class="lg:col-span-5 fade-in" style="animation-delay:.08s">
+      <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-sm font-semibold tracking-wider text-neutral-900">项目进度</h2>
+        <span class="text-xs text-neutral-400">10-Projects</span>
+      </div>
+      <div id="projectBoard" class="space-y-4"></div>
+    </section>
+
+    <!-- 右：近期笔记速览 -->
+    <section class="lg:col-span-3 fade-in" style="animation-delay:.16s">
+      <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-sm font-semibold tracking-wider text-neutral-900">近期笔记</h2>
+        <span class="text-xs text-neutral-400">速览</span>
+      </div>
+      <div id="noteList" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-6 pb-10 text-xs text-neutral-400">
+    数据源：本地 Obsidian 知识库（自动解析生成）· <span id="genTime"></span>
+  </footer>
+
+<script>
+/* ================= 数据（由 Obsidian 库解析生成） ================= */
+const DATA = {
+  "todos": [
+    { "text": "复习高等数学第三章「微分中值定理」，整理核心公式", "source": "2026-09-27 周末待办", "tag": "学习" },
+    { "text": "把本周数据结构错题录入错题本，标注错误类型", "source": "2026-09-27 周末待办", "tag": "学习" },
+    { "text": "精读论文《Attention Is All You Need》并写 300 字摘要", "source": "2026-09-27 周末待办", "tag": "学习" },
+    { "text": "完成大创项目申报书的「技术路线」章节", "source": "2026-09-27 周末待办", "tag": "项目" },
+    { "text": "给课程设计的二叉树可视化补上动画测试用例", "source": "2026-09-27 周末待办", "tag": "项目" },
+    { "text": "预约下周三的体育场馆", "source": "2026-09-27 周末待办", "tag": "生活" },
+    { "text": "想做一个「错题自动归档」的 Obsidian 插件，按错误类型打标签", "source": "灵感收集箱", "tag": "灵感" },
+    { "text": "把《刻意练习》里的方法论整理成复习 SOP 模板", "source": "灵感收集箱", "tag": "灵感" },
+    { "text": "试试用 MCP 把 GitHub 上的开源笔记模板导入知识库", "source": "灵感收集箱", "tag": "灵感" }
+  ],
+  "projects": [
+    { "name": "蓝桥杯备赛计划", "status": "进行中", "progress": 80, "due": "2026-10-15",
+      "summary": "DP 专题全部完成，真题模拟完成 1/3，整体进度 80%。",
+      "milestones": [ {"done": true, "text": "刷完 DP 专题 50 题"}, {"done": true, "text": "图论基础（最短路、并查集）"}, {"done": false, "text": "三套真题模拟（剩两套）"}, {"done": false, "text": "赛前模板整理"} ] },
+    { "name": "大创项目-校园智能导览系统", "status": "进行中", "progress": 60, "due": "2026-10-31",
+      "summary": "完成了三个校区的信标点位勘察，申报书整体完成度约 60%。",
+      "milestones": [ {"done": true, "text": "需求调研与竞品分析"}, {"done": true, "text": "技术选型（蓝牙信标 + RAG 检索）"}, {"done": false, "text": "申报书撰写（进行中，还差技术路线章节）"}, {"done": false, "text": "原型开发"}, {"done": false, "text": "中期检查答辩"} ] },
+    { "name": "课程设计-数据结构可视化工具", "status": "进行中", "progress": 35, "due": "2026-11-20",
+      "summary": "链表模块已收尾，二叉树模块刚起步，整体进度约 35%。",
+      "milestones": [ {"done": true, "text": "技术方案设计"}, {"done": true, "text": "链表模块动画"}, {"done": false, "text": "二叉树模块（动画测试用例待补）"}, {"done": false, "text": "图模块"}, {"done": false, "text": "结课答辩与报告"} ] }
+  ],
+  "notes": [
+    { "title": "错题本-数据结构", "folder": "20-Notes", "excerpt": "非递归遍历、Dijkstra 初始化等典型错误的复盘与避坑提醒。", "date": "09-27", "tags": ["错题本"] },
+    { "title": "读书笔记-刻意练习", "folder": "20-Notes", "excerpt": "天赋被高估，有目标的练习 + 即时反馈才是关键……", "date": "09-27", "tags": ["读书笔记"] },
+    { "title": "高数-第三章 微分中值定理", "folder": "20-Notes", "excerpt": "中值定理是证明题的高频考点，注意「构造辅助函数」的套路。", "date": "09-27", "tags": ["课堂笔记"] },
+    { "title": "蓝桥杯备赛计划", "folder": "10-Projects", "excerpt": "省赛一等奖，主攻动态规划与图论。", "date": "09-27", "tags": ["project", "竞赛"] },
+    { "title": "课程设计-数据结构可视化工具", "folder": "10-Projects", "excerpt": "用原生 JS 实现链表、二叉树、图的动画演示，辅助同学理解。", "date": "09-27", "tags": ["project", "课程设计"] },
+    { "title": "大创项目-校园智能导览系统", "folder": "10-Projects", "excerpt": "基于室内定位 + LLM 问答，为新生提供校园导览服务。", "date": "09-27", "tags": ["project", "大创"] }
+  ]
+};
+
+/* ================= 名言库 ================= */
+const QUOTES = [
+  { "t": "种一棵树最好的时间是十年前，其次是现在。", "a": "谚语" },
+  { "t": "纸上得来终觉浅，绝知此事要躬行。", "a": "陆游" },
+  { "t": "不积跬步，无以至千里；不积小流，无以成江海。", "a": "荀子" },
+  { "t": "The best way to predict the future is to invent it.", "a": "Alan Kay" },
+  { "t": "Stay hungry, stay foolish.", "a": "Steve Jobs" },
+  { "t": "博学之，审问之，慎思之，明辨之，笃行之。", "a": "《中庸》" }
+];
+
+/* ================= 顶部日期 ================= */
+(function renderDate() {
+  const now = new Date();
+  const week = ["日", "一", "二", "三", "四", "五", "六"][now.getDay()];
+  document.getElementById("today").textContent =
+    `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日`;
+  document.getElementById("todayDetail").textContent =
+    `星期${week} · 坚持记录，持续精进`;
+})();
+
+/* ================= 随机名言 ================= */
+function showQuote() {
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const box = document.getElementById("quoteBox");
+  box.classList.remove("quote-enter"); void box.offsetWidth; box.classList.add("quote-enter");
+  document.getElementById("quote").textContent = "「 " + q.t + " 」";
+  document.getElementById("quoteAuthor").textContent = "—— " + q.a;
+}
+showQuote();
+document.getElementById("shuffleQuote").addEventListener("click", showQuote);
+
+/* ================= 今日待办 ================= */
+(function renderTodos() {
+  const saved = JSON.parse(localStorage.getItem("doneMap") || "{}");
+  const list = document.getElementById("todoList");
+
+  // 按来源分组
+  const groups = {};
+  DATA.todos.forEach((t, i) => { (groups[t.source] = groups[t.source] || []).push({ ...t, idx: i }); });
+
+  Object.entries(groups).forEach(([source, items]) => {
+    const sec = document.createElement("div");
+    sec.className = "border-t border-neutral-200 pt-4";
+    sec.innerHTML = `<p class="text-xs text-neutral-400 mb-3">${source}</p>`;
+    items.forEach(t => {
+      const row = document.createElement("label");
+      row.className = "flex items-start gap-3 py-2 cursor-pointer group";
+      row.innerHTML = `
+        <input type="checkbox" data-idx="${t.idx}" class="mt-1 w-4 h-4 accent-neutral-900 shrink-0">
+        <span class="flex-1">
+          <span class="task-text text-sm leading-relaxed group-hover:text-neutral-900">${t.text}</span>
+          <span class="block mt-1 text-[11px] text-neutral-400">${t.tag}</span>
+        </span>`;
+      const cb = row.querySelector("input");
+      const txt = row.querySelector(".task-text");
+      cb.checked = !!saved[t.idx];
+      cb.addEventListener("change", () => {
+        saved[t.idx] = cb.checked;
+        localStorage.setItem("doneMap", JSON.stringify(saved));
+        txt.classList.toggle("done-task", cb.checked);
+        updateStats();
+      });
+      if (cb.checked) txt.classList.add("done-task");
+      sec.appendChild(row);
+    });
+    list.appendChild(sec);
+  });
+
+  // 统计：未完成待办
+  document.getElementById("statTodo").textContent =
+    DATA.todos.filter((t, i) => !saved[i]).length;
+})();
+
+/* ================= 项目进度看板 ================= */
+(function renderProjects() {
+  const board = document.getElementById("projectBoard");
+  DATA.projects.forEach(p => {
+    const doneCount = p.milestones.filter(m => m.done).length;
+    const card = document.createElement("article");
+    card.className = "bg-white border border-neutral-200 p-5 hover:border-neutral-400 transition-colors";
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 class="font-semibold text-sm leading-snug">${p.name}</h3>
+          <p class="text-[11px] text-neutral-400 mt-1">截止 ${p.due} · ${p.status}</p>
+        </div>
+        <span class="text-2xl font-bold tabular-nums ${p.progress >= 70 ? "text-neutral-900" : "text-neutral-500"}">${p.progress}<span class="text-sm">%</span></span>
+      </div>
+      <div class="h-1.5 bg-neutral-100 mb-4">
+        <div class="h-full bg-neutral-900" style="width:${p.progress}%"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
+        ${p.milestones.map(m => `
+          <div class="flex items-center gap-2 text-xs">
+            <span class="w-3.5 h-3.5 border flex items-center justify-center shrink-0 ${m.done ? "bg-neutral-900 border-neutral-900" : "border-neutral-300"}">
+              ${m.done ? `<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#fff" stroke-width="1.6"/></svg>` : ""}
+            </span>
+            <span class="${m.done ? "text-neutral-400 line-through" : "text-neutral-700"}">${m.text}</span>
+          </div>`).join("")}
+      </div>
+      <p class="text-xs text-neutral-500 border-t border-neutral-100 pt-3 leading-relaxed">${p.summary}（里程碑 ${doneCount}/${p.milestones.length}）</p>`;
+    board.appendChild(card);
+  });
+
+  document.getElementById("statProject").textContent = DATA.projects.length;
+  const avg = Math.round(DATA.projects.reduce((s, p) => s + p.progress, 0) / DATA.projects.length);
+  document.getElementById("statProgress").textContent = avg + "%";
+})();
+
+/* ================= 近期笔记速览 ================= */
+(function renderNotes() {
+  const list = document.getElementById("noteList");
+  DATA.notes.forEach(n => {
+    const a = document.createElement("article");
+    a.className = "bg-white border border-neutral-200 p-4 hover:border-neutral-400 transition-colors";
+    a.innerHTML = `
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[10px] font-medium tracking-wider uppercase text-neutral-400">${n.folder}</span>
+        <span class="text-[10px] text-neutral-400 tabular-nums">${n.date}</span>
+      </div>
+      <h3 class="text-sm font-semibold leading-snug mb-1">${n.title}</h3>
+      <p class="text-xs text-neutral-500 leading-relaxed">${n.excerpt || "（无摘要）"}</p>
+      <div class="flex gap-1.5 mt-2.5 flex-wrap">
+        ${n.tags.map(t => `<span class="text-[10px] px-1.5 py-0.5 border border-neutral-200 text-neutral-500">${t}</span>`).join("")}
+      </div>`;
+    list.appendChild(a);
+  });
+  document.getElementById("statNote").textContent = DATA.notes.length;
+})();
+
+/* ================= 工具 ================= */
+function updateStats() {
+  const saved = JSON.parse(localStorage.getItem("doneMap") || "{}");
+  document.getElementById("statTodo").textContent =
+    DATA.todos.filter((t, i) => !saved[i]).length;
+}
+
+document.getElementById("genTime").textContent =
+  "生成于 " + new Date(2026, 8, 27, 11, 45).toLocaleString("zh-CN");
+</script>
+</body>
+</html>
